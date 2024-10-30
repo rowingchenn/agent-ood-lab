@@ -44,6 +44,13 @@ CHAT_MODEL_ARGS_DICT = {
         max_new_tokens=4000,  # I think this model has very small default value if we don't set max_new_tokens
         vision_support=True,
     ),
+    "openai/gpt-4o": OpenAIModelArgs(
+        model_name="gpt-4o",
+        max_total_tokens=128_000,
+        max_input_tokens=60_000,  # make sure we don't bust budget
+        max_new_tokens=4000,  # I think this model has very small default value if we don't set max_new_tokens
+        vision_support=True,
+    ),
     "openai/gpt-4o-2024-05-13": OpenAIModelArgs(
         model_name="gpt-4o-2024-05-13",
         max_total_tokens=128_000,
