@@ -217,11 +217,13 @@ class ChatModel(AbstractChatModel):
         self.max_tokens = max_tokens
         self.max_retry = max_retry
         self.min_retry_wait_time = min_retry_wait_time
+        
 
         # Get the API key from the environment variable if not provided
         if api_key_env_var:
             api_key = api_key or os.getenv(api_key_env_var)
         self.api_key = api_key
+    
 
         # Get pricing information
         if pricing_func:
@@ -301,7 +303,12 @@ class OpenAIChatModel(ChatModel):
         max_tokens=100,
         max_retry=4,
         min_retry_wait_time=60,
+        client_args=None, # mainly for base_url
     ):
+        if client_args is None:
+            client_args = {}
+        if client_args.get("base_url") is None:
+            client_args["base_url"] = "https://api.shubiaobiao.cn/v1/"
         super().__init__(
             model_name=model_name,
             api_key=api_key,
@@ -312,6 +319,7 @@ class OpenAIChatModel(ChatModel):
             api_key_env_var="OPENAI_API_KEY",
             client_class=OpenAI,
             pricing_func=tracking.get_pricing_openai,
+            client_args=client_args,
         )
 
 

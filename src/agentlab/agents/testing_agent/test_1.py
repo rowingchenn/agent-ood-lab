@@ -1,96 +1,66 @@
-import logging
-import time as t
-from pathlib import Path
+import bgym
+from browsergym.experiments import EnvArgs
+from agentlab.agents import dynamic_prompting as dp
+from agentlab.agents.generic_agent.generic_agent import GenericAgentArgs
+from agentlab.agents.generic_agent.generic_agent_prompt import GenericPromptFlags
+from agentlab.llm.llm_configs import CHAT_MODEL_ARGS_DICT
 
 import numpy as np
-import pandas as pd
+import logging
 
 logger = logging.getLogger(__name__)
 
-from browsergym.experiments import EnvArgs
-from browsergym.webarena import ALL_WEBARENA_TASK_IDS
 
-df = pd.read_csv(Path(__file__).parent / "miniwob_tasks_all.csv")
-# append miniwob. to task_name column
-df["task_name"] = "miniwob." + df["task_name"]
-MINIWOB_ALL = df["task_name"].tolist()
-tasks_eval = df[df["miniwob_category"].isin(["original", "additional", "hidden test"])][
-    "task_name"
-].tolist()
-miniwob_debug = df[df["miniwob_category"].isin(["debug"])]["task_name"].tolist()
-MINIWOB_TINY_TEST = ["miniwob.click-dialog", "miniwob.click-checkboxes"]
+FLAGS_TEST = GenericPromptFlags(
+    obs=dp.ObsFlags(
+        use_html=False,
+        use_ax_tree=True,
+        use_focused_element=True,
+        use_error_logs=True,
+        use_history=True,
+        use_past_error_logs=False,
+        use_action_history=True,
+        use_think_history=False,
+        use_diff=False,
+        html_type="pruned_html",
+        use_screenshot=False,
+        use_som=False,
+        extract_visible_tag=True,
+        extract_clickable_tag=False,
+        extract_coords="False",
+        filter_visible_elements_only=False,
+    ),
+    action=dp.ActionFlags(
+        multi_actions=False,
+        action_set="bid",
+        long_description=False,
+        individual_examples=True,
+    ),
+    use_plan=False,
+    use_criticise=False,
+    use_thinking=True,
+    use_memory=False,
+    use_concrete_example=True,
+    use_abstract_example=True,
+    use_hints=True,
+    enable_chat=False,
+    max_prompt_tokens=None,
+    be_cautious=True,
+    extra_instructions=None,
+)
 
-assert len(MINIWOB_ALL) == 125
-assert len(tasks_eval) == 107
-assert len(miniwob_debug) == 12
-assert len(MINIWOB_TINY_TEST) == 2
+AGENT_TEST = GenericAgentArgs(
+    # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-2024-05-13"],
+    flags=FLAGS_TEST,
+    max_retry=3,
+)
 
-
-webgum_tasks = [
-    "miniwob.book-flight",
-    "miniwob.choose-date",
-    "miniwob.choose-date-easy",
-    "miniwob.choose-date-medium",
-    "miniwob.choose-list",
-    "miniwob.click-button",
-    "miniwob.click-button-sequence",
-    "miniwob.click-checkboxes",
-    "miniwob.click-checkboxes-large",
-    "miniwob.click-checkboxes-soft",
-    "miniwob.click-checkboxes-transfer",
-    "miniwob.click-collapsible",
-    "miniwob.click-collapsible-2",
-    "miniwob.click-color",
-    "miniwob.click-dialog",
-    "miniwob.click-dialog-2",
-    "miniwob.click-link",
-    "miniwob.click-menu",
-    "miniwob.click-option",
-    "miniwob.click-pie",
-    "miniwob.click-scroll-list",
-    "miniwob.click-shades",
-    "miniwob.click-shape",
-    "miniwob.click-tab",
-    "miniwob.click-tab-2",
-    "miniwob.click-tab-2-hard",
-    "miniwob.click-test",
-    "miniwob.click-test-2",
-    "miniwob.click-widget",
-    "miniwob.count-shape",
-    "miniwob.email-inbox",
-    "miniwob.email-inbox-forward-nl",
-    "miniwob.email-inbox-forward-nl-turk",
-    "miniwob.email-inbox-nl-turk",
-    "miniwob.enter-date",
-    "miniwob.enter-password",
-    "miniwob.enter-text",
-    "miniwob.enter-text-dynamic",
-    "miniwob.enter-time",
-    "miniwob.focus-text",
-    "miniwob.focus-text-2",
-    "miniwob.grid-coordinate",
-    "miniwob.guess-number",
-    "miniwob.identify-shape",
-    "miniwob.login-user",
-    "miniwob.login-user-popup",
-    "miniwob.multi-layouts",
-    "miniwob.multi-orderings",
-    "miniwob.navigate-tree",
-    "miniwob.search-engine",
-    "miniwob.social-media",
-    "miniwob.social-media-all",
-    "miniwob.social-media-some",
-    "miniwob.tic-tac-toe",
-    "miniwob.use-autocomplete",
-    "miniwob.use-spinner",
-]
-
-
-# TODO add miniwob_tiny_test as benchmarks
 def get_benchmark_env_args(
     benchmark_name: str, meta_seed=42, max_steps=None, n_repeat=None
 ) -> list[EnvArgs]:
     """
+    Changed from the original function in task_collection.py.
     Returns a list of EnvArgs for the given benchmark_name.
 
     Args:
@@ -119,11 +89,9 @@ def get_benchmark_env_args(
 
     max_steps_default = {
         "workarena.l1": 15,
-        "workarena.l2": 50,
-        "workarena.l3": 50,
+        "workarena.l2": 40,
+        "workarena.l3": 40,
         "webarena": 15,
-        "miniwob": 10,
-        "miniwob_tiny_test": 5,
         "weblinx": None,
     }
 
@@ -132,8 +100,6 @@ def get_benchmark_env_args(
         "workarena.l2": 1,
         "workarena.l3": 1,
         "webarena": 1,
-        "miniwob": 5,
-        "miniwob_tiny_test": 2,
         "weblinx": 1,
     }
 
@@ -149,11 +115,7 @@ def get_benchmark_env_args(
             n_repeat = 1
 
     if benchmark_name.startswith("workarena"):
-        t0 = t.time()
         from browsergym.workarena import ALL_WORKARENA_TASKS, ATOMIC_TASKS, get_all_tasks_agents
-
-        dt = t.time() - t0
-        print(f"done importing workarena, took {dt:.2f} seconds")
 
         if len(filters) < 2:
             raise ValueError(f"You must specify the sub set of workarena, e.g.: workarena.l2.")
@@ -195,18 +157,33 @@ def get_benchmark_env_args(
 
     return env_args_list
 
+def main():
+    exp_dir = f"/home/weichen/AgentLab_OOD/src/agentlab/agents/testing_agent/{__name__}"
+    
+    env_args = bgym.EnvArgs(
+        task_name="workarena.servicenow.create-incident",
+        task_seed=130,
+        max_steps=15,
+        headless=False,
+    )
+    
+    exp_args_list = [
+        bgym.ExpArgs(
+            agent_args=AGENT_TEST,
+            env_args=env_args,
+            logging_level=logging.INFO,
+        ),
+    ]
+    
+    for exp_args in exp_args_list:
+        exp_args.agent_args.prepare()
+        exp_args.prepare(exp_root=exp_dir)
+        logging.info(f"Ready to run {exp_args}.")
+        exp_args.run()
+        logging.info("All jobs are finished. Calling agent_args.close() on all agents...")
+        exp_args.agent_args.close()
+        logging.info("Experiment finished.")
 
-def _make_env_args(task_list, max_steps, n_seeds_default, rng):
-    env_args_list = []
-    for task in task_list:
-        for seed in rng.randint(0, 100, n_seeds_default):
-            env_args_list.append(EnvArgs(task_name=task, task_seed=int(seed), max_steps=max_steps))
-    return env_args_list
-
-
+# 检查是否是主程序
 if __name__ == "__main__":
-    env_args_list = get_benchmark_env_args("workarena.l1")
-    print(f"Number of tasks: {len(env_args_list)}")
-    for env_args in env_args_list:
-        # if "infeasible" in env_args.task_name:
-        print(env_args.task_seed, env_args.task_name)
+    main()

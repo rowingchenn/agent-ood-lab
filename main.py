@@ -25,9 +25,9 @@ agent_args = [AGENT_4o_MINI]
 # agent_args = [AGENT_4o]
 
 ## select the benchmark to run on
-benchmark = "miniwob_tiny_test"
+# benchmark = "miniwob_tiny_test"
 # benchmark = "miniwob"
-# benchmark = "workarena.l1"
+benchmark = "workarena.l1"
 # benchmark = "workarena.l2"
 # benchmark = "workarena.l3"
 # benchmark = "webarena"

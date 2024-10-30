@@ -2,7 +2,7 @@ import pandas as pd
 from openai import OpenAI
 
 if __name__ == "__main__":
-    models = OpenAI().models.list()
+    models = OpenAI(base_url="https://api.shubiaobiao.cn/v1/").models.list()
     df = pd.DataFrame([dict(model) for model in models.data])
 
     # Filter GPT models
