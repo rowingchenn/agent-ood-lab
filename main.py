@@ -14,6 +14,8 @@ from agentlab.agents.generic_agent import (
     AGENT_4o_MINI,
     AGENT_LLAMA3_70B,
     AGENT_LLAMA31_70B,
+    AGENT_TEST_LOCAL,
+    AGENT_TEST_API,
 )
 from agentlab.analyze.inspect_results import get_most_recent_folder
 from agentlab.experiments import study_generators
@@ -21,7 +23,7 @@ from agentlab.experiments import study_generators
 logging.getLogger().setLevel(logging.INFO)
 
 # choose your agent or provide a new agent
-agent_args = [AGENT_4o_MINI]
+agent_args = [AGENT_TEST_LOCAL]
 # agent_args = [AGENT_4o]
 
 ## select the benchmark to run on
@@ -42,7 +44,7 @@ reproducibility_mode = False
 relaunch = False
 
 ## Number of parallel jobs
-n_jobs = 4  # Make sure to use 1 job when debugging in VSCode
+n_jobs = 6  # Make sure to use 1 job when debugging in VSCode
 # n_jobs = -1  # to use all available cores
 
 

@@ -23,14 +23,12 @@ CHAT_MODEL_ARGS_DICT = {
         max_total_tokens=128_000,
         max_input_tokens=80_000,  # input limit of 4o-mini is 128,000 tokens. Prompt shrink based on max_input_tokens.
         max_new_tokens=4000,  # output limit of 4o-mini is 16,384 tokens
-        vision_support=True,
     ),
     "openai/gpt-4o-mini-2024-07-18": OpenAIModelArgs(
         model_name_or_path="gpt-4o-mini-2024-07-18",
         max_total_tokens=128_000,
         max_input_tokens=40_000,
         max_new_tokens=4000,
-        vision_support=True,
     ),
     "openai/gpt-4-1106-preview": OpenAIModelArgs(
         model_name_or_path="gpt-4-1106-preview",
@@ -184,6 +182,16 @@ CHAT_MODEL_ARGS_DICT = {
         temperature=1e-1,
         top_k=50,
         top_p=0.9,
+        repetition_penalty=1.2,
+        do_sample=True,
+    ),
+    "local/Qwen2.5-32B-Instruct": LocalHuggingFaceModelArgs(
+        model_name_or_path="Qwen/Qwen2.5-32B-Instruct",
+        max_new_tokens=2048,
+        max_retry=4,
+        temperature=1e-1,
+        top_k=15,
+        top_p=0.5,
         repetition_penalty=1.2,
         do_sample=True,
     ),

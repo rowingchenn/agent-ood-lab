@@ -79,7 +79,7 @@ class OpenRouterModelArgs(BaseModelArgs):
 
     def make_model(self):
         return OpenRouterChatModel(
-            model_name=selfmodel_name_or_path,
+            model_name=self.model_name_or_path,
             temperature=self.temperature,
             max_tokens=self.max_new_tokens,
         )
@@ -488,9 +488,12 @@ class LocalHuggingFaceChatModel(LocalChatModel):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
 
         logger.debug("Loading model and moving it to the appropriate device...")
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.llm = AutoModelForCausalLM.from_pretrained(model_name_or_path).to(self.device)
-        logger.debug(f"Model loaded on device: {self.device}")
+        self.llm = AutoModelForCausalLM.from_pretrained(
+            model_name_or_path,
+            device_map="auto",  # Automatically distribute the model across available GPUs
+            torch_dtype=torch.float16,
+            attn_implementation="flash_attention_2",
+        )  # Use half precision to save memory (optional))
 
     def __call__(self, messages: List[Dict[str, str]]) -> Dict[str, str]:
         """Generates a response using the model based on the input messages."""
@@ -510,7 +513,7 @@ class LocalHuggingFaceChatModel(LocalChatModel):
                     prompt = self._format_messages(messages)
 
                 logger.debug("Encoding input prompt...")
-                inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+                inputs = self.tokenizer(prompt, return_tensors="pt")
 
                 logger.debug("Generating response...")
                 output_ids = self.llm.generate(

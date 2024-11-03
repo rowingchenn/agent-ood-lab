@@ -8,6 +8,8 @@ from .agent_configs import (
     AGENT_4o,
     AGENT_4o_MINI,
     AGENT_4o_VISION,
+    AGENT_TEST_LOCAL,
+    AGENT_TEST_API
 )
 
 __all__ = [
@@ -20,4 +22,6 @@ __all__ = [
     "AGENT_8B",
     "RANDOM_SEARCH_AGENT",
     "AGENT_CUSTOM",
+    "AGENT_TEST_LOCAL",
+    "AGENT_TEST_API",
 ]
