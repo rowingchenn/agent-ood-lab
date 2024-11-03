@@ -44,7 +44,7 @@ FLAGS_TEST = GenericPromptFlags(
     use_abstract_example=True,
     use_hints=True,
     enable_chat=False,
-    max_prompt_tokens=None,
+    max_prompt_tokens=128000, # The context of Qwen2.5-7B-Instruct is 128K tokens
     be_cautious=True,
     extra_instructions=None,
 )
@@ -52,21 +52,23 @@ FLAGS_TEST = GenericPromptFlags(
 AGENT_TEST = GenericAgentArgs(
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o"],
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4-1106-preview"],
+    # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4-1106-preview"],
+    chat_model_args=CHAT_MODEL_ARGS_DICT["local/Qwen2.5-7B-Instruct"],
     flags=FLAGS_TEST,
     max_retry=3,
 )
 
+
 def main():
     exp_dir = "/home/weichen/AgentLab_OOD/src/agentlab/agents/testing_agent/test_1"
-    
+
     env_args = bgym.EnvArgs(
         task_name="workarena.servicenow.create-incident",
         task_seed=484,
         max_steps=15,
         headless=False,
     )
-    
+
     exp_args_list = [
         bgym.ExpArgs(
             agent_args=AGENT_TEST,
@@ -74,7 +76,7 @@ def main():
             logging_level=logging.INFO,
         ),
     ]
-    
+
     for exp_args in exp_args_list:
         exp_args.agent_args.prepare()
         exp_args.prepare(exp_root=exp_dir)
@@ -83,6 +85,7 @@ def main():
         logging.info("All jobs are finished. Calling agent_args.close() on all agents...")
         exp_args.agent_args.close()
         logging.info("Experiment finished.")
+
 
 # 检查是否是主程序
 if __name__ == "__main__":

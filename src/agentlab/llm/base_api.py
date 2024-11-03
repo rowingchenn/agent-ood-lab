@@ -15,7 +15,7 @@ class AbstractChatModel(ABC):
 class BaseModelArgs(ABC):
     """Base class for all model arguments."""
 
-    model_name: str
+    model_name_or_path: str
     max_total_tokens: int = None
     max_input_tokens: int = None
     max_new_tokens: int = None

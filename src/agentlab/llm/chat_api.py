@@ -14,6 +14,13 @@ import agentlab.llm.tracking as tracking
 from agentlab.llm.base_api import AbstractChatModel, BaseModelArgs
 from agentlab.llm.huggingface_utils import HFBaseChatModel
 
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from typing import List, Dict, Any
+import logging
+import torch
+
+logger = logging.getLogger(__name__)
+
 
 def make_system_message(content: str) -> dict:
     return dict(role="system", content=content)
@@ -72,7 +79,7 @@ class OpenRouterModelArgs(BaseModelArgs):
 
     def make_model(self):
         return OpenRouterChatModel(
-            model_name=self.model_name,
+            model_name=selfmodel_name_or_path,
             temperature=self.temperature,
             max_tokens=self.max_new_tokens,
         )
@@ -85,7 +92,7 @@ class OpenAIModelArgs(BaseModelArgs):
 
     def make_model(self):
         return OpenAIChatModel(
-            model_name=self.model_name,
+            model_name=self.model_name_or_path,
             temperature=self.temperature,
             max_tokens=self.max_new_tokens,
         )
@@ -99,7 +106,7 @@ class AzureModelArgs(BaseModelArgs):
 
     def make_model(self):
         return AzureChatModel(
-            model_name=self.model_name,
+            model_name=self.model_name_or_path,
             temperature=self.temperature,
             max_tokens=self.max_new_tokens,
             deployment_name=self.deployment_name,
@@ -168,6 +175,29 @@ class ChatModelArgs(BaseModelArgs):
         pass
 
 
+@dataclass
+class LocalHuggingFaceModelArgs(BaseModelArgs):
+    """Serializable object for instantiating a generic chat model with a local HuggingFace model."""
+
+    max_retry: int = 4
+    top_k: int = 50
+    top_p: float = 0.9
+    repetition_penalty: float = 1.0
+    do_sample: bool = True
+
+    def make_model(self):
+        return LocalHuggingFaceChatModel(
+            model_name_or_path=self.model_name_or_path,
+            max_new_tokens=self.max_new_tokens,
+            max_retry=self.max_retry,
+            temperature=self.temperature,
+            top_k=self.top_k,
+            top_p=self.top_p,
+            repetition_penalty=self.repetition_penalty,
+            do_sample=self.do_sample,
+        )
+
+
 def _extract_wait_time(error_message, min_retry_wait_time=60):
     """Extract the wait time from an OpenAI RateLimitError message."""
     match = re.search(r"try again in (\d+(\.\d+)?)s", error_message)
@@ -217,13 +247,11 @@ class ChatModel(AbstractChatModel):
         self.max_tokens = max_tokens
         self.max_retry = max_retry
         self.min_retry_wait_time = min_retry_wait_time
-        
 
         # Get the API key from the environment variable if not provided
         if api_key_env_var:
             api_key = api_key or os.getenv(api_key_env_var)
         self.api_key = api_key
-    
 
         # Get pricing information
         if pricing_func:
@@ -303,7 +331,7 @@ class OpenAIChatModel(ChatModel):
         max_tokens=100,
         max_retry=4,
         min_retry_wait_time=60,
-        client_args=None, # mainly for base_url
+        client_args=None,  # mainly for base_url
     ):
         if client_args is None:
             client_args = {}
@@ -404,3 +432,140 @@ class HuggingFaceURLChatModel(HFBaseChatModel):
         self.llm = partial(
             client.text_generation, temperature=temperature, max_new_tokens=max_new_tokens
         )
+
+
+class LocalChatModel:
+    def __init__(
+        self,
+        model_name_or_path: str,
+        max_new_tokens: int = 100,
+        max_retry: int = 4,
+        temperature: float = 0.5,
+        top_k: int = 50,
+        top_p: float = 0.9,
+        repetition_penalty: float = 1.0,
+        do_sample: bool = True,
+    ):
+        """
+        Base class for local chat models.
+
+        Args:
+            model_name_or_path (str): Path or model ID to load the model from.
+            max_new_tokens (int): Maximum number of tokens to generate.
+            max_retry (int): Maximum number of retry attempts for generating a response.
+            temperature (float): Sampling temperature for generation.
+            top_k (int): Number of highest probability vocabulary tokens to keep for top-k sampling.
+            top_p (float): Cumulative probability for top-p (nucleus) sampling.
+            repetition_penalty (float): Penalty for repetition during generation.
+            do_sample (bool): Whether to sample from the model's output distribution.
+        """
+        self.model_name_or_path = model_name_or_path
+        self.max_new_tokens = max_new_tokens
+        self.max_retry = max_retry
+        self.temperature = temperature
+        self.top_k = top_k
+        self.top_p = top_p
+        self.repetition_penalty = repetition_penalty
+        self.do_sample = do_sample
+
+    def __call__(self, messages: List[Dict[str, Any]]) -> Dict[str, str]:
+        raise NotImplementedError("Subclasses should implement this method.")
+
+
+class LocalHuggingFaceChatModel(LocalChatModel):
+    def __init__(self, model_name_or_path: str, **kwargs):
+        """
+        Subclass for handling local Hugging Face models with additional configuration options.
+
+        Args:
+            model_name_or_path (str): Path or model ID to load the tokenizer and model from.
+            kwargs: Additional generation parameters passed to the parent class.
+        """
+        super().__init__(model_name_or_path, **kwargs)
+
+        # Load tokenizer and model
+        logger.debug("Loading tokenizer...")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
+
+        logger.debug("Loading model and moving it to the appropriate device...")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.llm = AutoModelForCausalLM.from_pretrained(model_name_or_path).to(self.device)
+        logger.debug(f"Model loaded on device: {self.device}")
+
+    def __call__(self, messages: List[Dict[str, str]]) -> Dict[str, str]:
+        """Generates a response using the model based on the input messages."""
+        self.retries = 0
+        self.error_types = []
+
+        for itr in range(self.max_retry):
+            self.retries += 1
+            try:
+                # Use apply_chat_template if available
+                if hasattr(self.tokenizer, "apply_chat_template"):
+                    prompt = self.tokenizer.apply_chat_template(
+                        messages, tokenize=False, add_generation_prompt=True
+                    )
+                else:
+                    logger.debug("apply_chat_template not available, using manual formatting.")
+                    prompt = self._format_messages(messages)
+
+                logger.debug("Encoding input prompt...")
+                inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+
+                logger.debug("Generating response...")
+                output_ids = self.llm.generate(
+                    input_ids=inputs.input_ids,
+                    # attention_mask=inputs["attention_mask"],
+                    max_new_tokens=self.max_new_tokens,
+                    temperature=self.temperature,
+                    top_k=self.top_k,
+                    top_p=self.top_p,
+                    repetition_penalty=self.repetition_penalty,
+                    do_sample=self.do_sample,
+                )
+
+                generated_ids = [
+                    output_id[len(input_id) :]
+                    for input_id, output_id in zip(inputs.input_ids, output_ids)
+                ]
+
+                logger.debug("Decoding generated output...")
+                generated_text = self.tokenizer.batch_decode(
+                    generated_ids, skip_special_tokens=True
+                )[0]
+
+                return make_assistant_message(generated_text)
+            except Exception as e:
+                logger.debug(f"Error on attempt {itr + 1}: {str(e)}")
+                self.error_types.append(self._handle_error(e, itr))
+                if itr == self.max_retry - 1:
+                    raise e
+
+        logger.debug("An error occurred after multiple retries.")
+        return make_assistant_message("An error occurred after multiple retries.")
+
+    def _format_messages(self, messages: List[Dict[str, str]]) -> str:
+        """Formats a list of input messages into a single string prompt."""
+        formatted = ""
+        for message in messages:
+            role = message.get("role", "")
+            content = message.get("content", "")
+            if role and content:
+                formatted += f"{role}: {content}\n"
+            else:
+                raise ValueError("Each message must have a 'role' and 'content'.")
+        return formatted
+
+    def _extract_response(self, prompt: str, generated_text: str) -> str:
+        """Extracts the model's response from the generated text by removing the prompt part."""
+        return generated_text[len(prompt) :].strip()
+
+    def _handle_error(self, e: Exception, itr: int) -> str:
+        """Handles errors and logs information about the failure."""
+        return type(e).__name__
+
+    def get_stats(self):
+        return {
+            "n_retry_llm": self.retries,
+            # "busted_retry_llm": int(not self.success), # not logged if it occurs anyways
+        }

@@ -21,7 +21,9 @@ class GenericAgentArgs(AgentArgs):
 
     def __post_init__(self):
         try:  # some attributes might be temporarily args.CrossProd for hyperparameter generation
-            self.agent_name = f"GenericAgent-{self.chat_model_args.model_name}".replace("/", "_")
+            self.agent_name = f"GenericAgent-{self.chat_model_args.model_name_or_path}".replace(
+                "/", "_"
+            )
         except AttributeError:
             pass
 
@@ -93,7 +95,7 @@ class GenericAgent(Agent):
         prompt = dp.fit_tokens(
             shrinkable=main_prompt,
             max_prompt_tokens=max_prompt_tokens,
-            model_name=self.chat_model_args.model_name,
+            model_name=self.chat_model_args.model_name_or_path,
             max_iterations=max_trunc_itr,
             additional_prompts=system_prompt,
         )
@@ -105,6 +107,7 @@ class GenericAgent(Agent):
                 make_system_message(system_prompt),
                 make_user_message(prompt),
             ]
+            # print(chat_messages)
             ans_dict = retry(
                 self.chat_llm,
                 chat_messages,
