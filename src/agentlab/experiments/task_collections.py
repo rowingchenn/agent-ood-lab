@@ -205,7 +205,7 @@ def _make_env_args(task_list, max_steps, n_seeds_default, rng):
 
 
 if __name__ == "__main__":
-    env_args_list = get_benchmark_env_args("workarena.l1")
+    env_args_list = get_benchmark_env_args("webarena")
     print(f"Number of tasks: {len(env_args_list)}")
     for env_args in env_args_list:
         # if "infeasible" in env_args.task_name:

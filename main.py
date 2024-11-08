@@ -44,7 +44,7 @@ reproducibility_mode = False
 relaunch = False
 
 ## Number of parallel jobs
-n_jobs = 6  # Make sure to use 1 job when debugging in VSCode
+n_jobs = 3  # Make sure to use 1 job when debugging in VSCode
 # n_jobs = -1  # to use all available cores
 
 

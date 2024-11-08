@@ -560,6 +560,25 @@ elements in the page is through bid which are specified in your observations.
     # """
 
     def _parse_answer(self, text_answer):
+        """
+        Parses the provided text answer to extract an "action" from HTML tags or code blocks.
+
+        This method attempts to parse a given text input (`text_answer`) and extract the "action" key,
+        which is expected to be in HTML format or within code blocks. The method handles potential parsing
+        errors based on the strictness level defined in `self.action_flags`. If `action` is successfully
+        extracted, it checks if the action can be mapped to Python code for further use.
+
+        Args:
+            text_answer (str): The input string containing the HTML-formatted or code block-defined action.
+
+        Returns:
+            dict: A dictionary containing the parsed action. If there was a parsing error and code blocks
+                  were found, includes an additional "parse_error" message.
+
+        Raises:
+            ParseError: If parsing fails and the strict flag is set, or if the action does not map to
+                        allowed actions, a ParseError is raised with an appropriate message.
+        """
         try:
             ans_dict = parse_html_tags_raise(text_answer, keys=["action"], merge_multiple=True)
         except ParseError as e:

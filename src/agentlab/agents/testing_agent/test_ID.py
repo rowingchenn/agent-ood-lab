@@ -4,6 +4,13 @@ from agentlab.agents import dynamic_prompting as dp
 from agentlab.agents.generic_agent.generic_agent import GenericAgentArgs
 from agentlab.agents.generic_agent.generic_agent_prompt import GenericPromptFlags
 from agentlab.llm.llm_configs import CHAT_MODEL_ARGS_DICT
+import os
+
+# 获取当前 Python 文件的目录路径
+current_directory = os.path.dirname(os.path.abspath(__file__))
+
+# 将工作目录更改为当前文件目录
+os.chdir(current_directory)
 
 import numpy as np
 import logging
@@ -32,7 +39,7 @@ FLAGS_TEST = GenericPromptFlags(
     ),
     action=dp.ActionFlags(
         multi_actions=False,
-        action_set="bid",
+        action_set="bid", # change to benchmark specific action set!
         long_description=False,
         individual_examples=True,
     ),
@@ -44,27 +51,27 @@ FLAGS_TEST = GenericPromptFlags(
     use_abstract_example=True,
     use_hints=True,
     enable_chat=False,
-    max_prompt_tokens=128000, # The context of Qwen2.5-7B-Instruct is 128K tokens
+    max_prompt_tokens=128000,  # The context of Qwen2.5-7B-Instruct is 128K tokens
     be_cautious=True,
     extra_instructions=None,
 )
 
 AGENT_TEST = GenericAgentArgs(
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
-    # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o"],
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4-1106-preview"],
-    chat_model_args=CHAT_MODEL_ARGS_DICT["local/Qwen2.5-7B-Instruct"],
+    # chat_model_args=CHAT_MODEL_ARGS_DICT["local/Qwen2.5-7B-Instruct"],
     flags=FLAGS_TEST,
     max_retry=3,
 )
 
 
 def main():
-    exp_dir = "/home/weichen/AgentLab_OOD/src/agentlab/agents/testing_agent/test_1"
+    exp_dir = "./test_ID/"
 
     env_args = bgym.EnvArgs(
-        task_name="workarena.servicenow.create-incident",
-        task_seed=484,
+        task_name="webarena.692",
+        task_seed=89,
         max_steps=15,
         headless=False,
     )
