@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agentlab"
+name = "agent_ood_lab"
 dynamic = ["version", "dependencies"]
 description = "Main package for developing agents and experiments"
 authors = [
@@ -14,6 +14,7 @@ authors = [
     {name = "Tom Marty", email = "tom.marty@polymtl.ca"},
     {name = "Massimo Caccia", email = "massimo.caccia1@servicenow.com"},
     {name = "Thibault Le Sellier de Chezelles", email = "thibault.de.chezelles@gmail.com"}
+    {name = "Weichen Zhang", email = "rowingchenn@berkeley.edu"}
 ]
 readme = "README.md"
 requires-python = ">3.7"
