@@ -1,3 +1,5 @@
+import bgym
+
 from agentlab.agents import dynamic_prompting as dp
 from agentlab.experiments import args
 from agentlab.llm.llm_configs import CHAT_MODEL_ARGS_DICT
@@ -25,8 +27,10 @@ FLAGS_CUSTOM = GenericPromptFlags(
         filter_visible_elements_only=False,
     ),
     action=dp.ActionFlags(
-        multi_actions=False,
-        action_set="bid",
+        action_set=bgym.HighLevelActionSetArgs(
+            subsets=["bid"],
+            multiaction=False,
+        ),
         long_description=False,
         individual_examples=True,
     ),
@@ -38,7 +42,7 @@ FLAGS_CUSTOM = GenericPromptFlags(
     use_abstract_example=True,
     use_hints=True,
     enable_chat=False,
-    max_prompt_tokens=None,
+    max_prompt_tokens=40_000,
     be_cautious=True,
     extra_instructions=None,
 )
@@ -71,8 +75,10 @@ FLAGS_GPT_3_5 = GenericPromptFlags(
         filter_visible_elements_only=False,
     ),
     action=dp.ActionFlags(
-        multi_actions=False,  # often detrimental
-        action_set="bid",
+        action_set=bgym.HighLevelActionSetArgs(
+            subsets=["bid"],
+            multiaction=False,
+        ),
         long_description=False,
         individual_examples=True,
     ),
@@ -84,7 +90,7 @@ FLAGS_GPT_3_5 = GenericPromptFlags(
     use_abstract_example=True,  # useful
     use_hints=True,  # useful
     enable_chat=False,
-    max_prompt_tokens=None,
+    max_prompt_tokens=40_000,
     be_cautious=True,
     extra_instructions=None,
 )
@@ -116,8 +122,10 @@ FLAGS_LLAMA3_70B = GenericPromptFlags(
         filter_visible_elements_only=False,
     ),
     action=dp.ActionFlags(
-        multi_actions=False,
-        action_set="bid",
+        action_set=bgym.HighLevelActionSetArgs(
+            subsets=["bid"],
+            multiaction=False,
+        ),
         long_description=False,
         individual_examples=True,
     ),
@@ -129,7 +137,7 @@ FLAGS_LLAMA3_70B = GenericPromptFlags(
     use_abstract_example=True,
     use_hints=True,
     enable_chat=False,
-    max_prompt_tokens=None,
+    max_prompt_tokens=40_000,
     be_cautious=True,
     extra_instructions=None,
     add_missparsed_messages=True,
@@ -164,8 +172,10 @@ FLAGS_8B = GenericPromptFlags(
         filter_visible_elements_only=False,
     ),
     action=dp.ActionFlags(
-        multi_actions=True,
-        action_set="bid",
+        action_set=bgym.HighLevelActionSetArgs(
+            subsets=["bid"],
+            multiaction=True,
+        ),
         long_description=False,
         individual_examples=True,
     ),
@@ -177,7 +187,7 @@ FLAGS_8B = GenericPromptFlags(
     use_abstract_example=True,
     use_hints=True,
     enable_chat=False,
-    max_prompt_tokens=None,
+    max_prompt_tokens=40_000,
     be_cautious=True,
     extra_instructions=None,
     add_missparsed_messages=True,
@@ -210,8 +220,10 @@ FLAGS_GPT_4o = GenericPromptFlags(
         filter_visible_elements_only=False,
     ),
     action=dp.ActionFlags(
-        multi_actions=False,
-        action_set="bid",
+        action_set=bgym.HighLevelActionSetArgs(
+            subsets=["bid"],
+            multiaction=False,
+        ),
         long_description=False,
         individual_examples=False,
     ),
@@ -223,7 +235,7 @@ FLAGS_GPT_4o = GenericPromptFlags(
     use_abstract_example=True,
     use_hints=True,
     enable_chat=False,
-    max_prompt_tokens=None,
+    max_prompt_tokens=40_000,
     be_cautious=True,
     extra_instructions=None,
 )
@@ -270,10 +282,12 @@ DEFAULT_RS_FLAGS = GenericPromptFlags(
         filter_visible_elements_only=args.Choice([True, False], p=[0.3, 0.7]),
     ),
     action=dp.ActionFlags(
-        multi_actions=args.Choice([True, False], p=[0.7, 0.3]),
-        action_set=args.Choice(["bid", "bid+coord"]),
-        # action_set=args.Choice(["python", "bid", "coord",
-        # "bid+coord"]),
+        action_set=bgym.HighLevelActionSetArgs(
+            subsets=args.Choice([["bid"], ["bid", "coord"]]),
+            multiaction=args.Choice([True, False], p=[0.7, 0.3]),
+        ),
+        long_description=False,
+        individual_examples=False,
     ),
     # drop_ax_tree_first=True, # this flag is no longer active, according to browsergym doc
     use_plan=args.Choice([True, False]),
@@ -285,7 +299,7 @@ DEFAULT_RS_FLAGS = GenericPromptFlags(
     use_hints=args.Choice([True, False], p=[0.7, 0.3]),
     be_cautious=args.Choice([True, False]),
     enable_chat=False,
-    max_prompt_tokens=None,
+    max_prompt_tokens=40_000,
     extra_instructions=None,
 )
 

@@ -13,6 +13,7 @@ from openai import AzureOpenAI, OpenAI
 import agentlab.llm.tracking as tracking
 from agentlab.llm.base_api import AbstractChatModel, BaseModelArgs
 from agentlab.llm.huggingface_utils import HFBaseChatModel
+from agentlab.llm.llm_utils import Discussion
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from typing import List, Dict, Any
@@ -37,8 +38,18 @@ def make_assistant_message(content: str) -> dict:
 class CheatMiniWoBLLM(AbstractChatModel):
     """For unit-testing purposes only. It only work with miniwob.click-test task."""
 
+    def __init__(self, wait_time=0) -> None:
+        self.wait_time = wait_time
+
     def __call__(self, messages) -> str:
-        prompt = messages[-1]["content"]
+        if self.wait_time > 0:
+            print(f"Waiting for {self.wait_time} seconds")
+            time.sleep(self.wait_time)
+
+        if isinstance(messages, Discussion):
+            prompt = messages.to_string()
+        else:
+            prompt = messages[1].get("content", "")
         match = re.search(r"^\s*\[(\d+)\].*button", prompt, re.MULTILINE | re.IGNORECASE)
 
         if match:
@@ -61,9 +72,10 @@ class CheatMiniWoBLLMArgs:
     max_total_tokens = 10240
     max_input_tokens = 8000
     max_new_tokens = 128
+    wait_time: int = 0
 
     def make_model(self):
-        return CheatMiniWoBLLM()
+        return CheatMiniWoBLLM(self.wait_time)
 
     def prepare_server(self):
         pass
@@ -226,6 +238,10 @@ def handle_error(error, itr, min_retry_wait_time, max_retry):
     return error_type
 
 
+class OpenRouterError(openai.OpenAIError):
+    pass
+
+
 class ChatModel(AbstractChatModel):
     def __init__(
         self,
@@ -292,6 +308,12 @@ class ChatModel(AbstractChatModel):
                     temperature=self.temperature,
                     max_tokens=self.max_tokens,
                 )
+
+                if completion.usage is None:
+                    raise OpenRouterError(
+                        "The completion object does not contain usage information. This is likely a bug in the OpenRouter API."
+                    )
+
                 self.success = True
                 break
             except openai.OpenAIError as e:

@@ -7,7 +7,6 @@ repository.
 """
 
 import logging
-
 from agentlab.agents.generic_agent import (
     RANDOM_SEARCH_AGENT,
     AGENT_4o,
@@ -17,8 +16,7 @@ from agentlab.agents.generic_agent import (
     AGENT_TEST_LOCAL,
     AGENT_TEST_API,
 )
-from agentlab.analyze.inspect_results import get_most_recent_folder
-from agentlab.experiments import study_generators
+from agentlab.experiments.study import Study
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -26,12 +24,13 @@ logging.getLogger().setLevel(logging.INFO)
 agent_args = [AGENT_TEST_LOCAL]
 # agent_args = [AGENT_4o]
 
-## select the benchmark to run on
-# benchmark = "miniwob_tiny_test"
+
+# ## select the benchmark to run on
+benchmark = "miniwob_tiny_test"
 # benchmark = "miniwob"
-benchmark = "workarena.l1"
-# benchmark = "workarena.l2"
-# benchmark = "workarena.l3"
+# benchmark = "workarena_l1"
+# benchmark = "workarena_l2"
+# benchmark = "workarena_l3"
 # benchmark = "webarena"
 
 # Set reproducibility_mode = True for reproducibility
@@ -55,13 +54,18 @@ if __name__ == "__main__":  # necessary for dask backend
 
     if relaunch:
         #  relaunch an existing study
-        study_dir = get_most_recent_folder()
-        study = study_generators.make_relaunch_study(study_dir, relaunch_mode="incomplete_or_error")
+        study = Study.load_most_recent(contains=None)
+        study.find_incomplete(include_errors=True)
 
     else:
-        study = study_generators.run_agents_on_benchmark(agent_args, benchmark)
+        study = Study(agent_args, benchmark, logging_level_stdout=logging.WARNING)
 
-    study.run(n_jobs=n_jobs, parallel_backend="joblib", strict_reproducibility=reproducibility_mode)
+    study.run(
+        n_jobs=n_jobs,
+        parallel_backend="ray",
+        strict_reproducibility=reproducibility_mode,
+        n_relaunch=3,
+    )
 
     if reproducibility_mode:
         study.append_to_journal(strict_reproducibility=True)

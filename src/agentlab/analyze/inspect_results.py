@@ -16,6 +16,7 @@ from browsergym.experiments.loop import ExpResult, get_exp_result, yield_all_exp
 from IPython.display import display
 from tqdm import tqdm
 
+
 from agentlab.analyze.error_categorization import (
     ERR_CLASS_MAP,
     is_critical_server_error,
@@ -245,9 +246,9 @@ def get_std_err(df, metric):
     if np.all(np.isin(data, [0, 1])):
         mean = np.mean(data)
         std_err = np.sqrt(mean * (1 - mean) / len(data))
+        return mean, std_err
     else:
         return get_sample_std_err(df, metric)
-    return mean, std_err
 
 
 def get_sample_std_err(df, metric):
@@ -258,7 +259,7 @@ def get_sample_std_err(df, metric):
     mean = np.mean(data)
     std_err = np.std(data, ddof=1) / np.sqrt(len(data))
     if np.isnan(std_err):
-        std_err = 0
+        std_err = np.float64(0)
     return mean, std_err
 
 
@@ -295,6 +296,8 @@ def summarize(sub_df, use_bootstrap=False):
             n_completed=f"{n_completed}/{len(sub_df)}",
             n_err=err.sum(skipna=True),
         )
+        if "stats.cum_cost" in sub_df:
+            record["cum_cost"] = sub_df["stats.cum_cost"].sum(skipna=True).round(4)
 
     return pd.Series(record)
 
@@ -509,41 +512,6 @@ def flag_report(report: pd.DataFrame, metric: str = "avg_reward", round_digits: 
     return flag_report
 
 
-def get_most_recent_folder(
-    root_dir: Path = None, date_format: str = "%Y-%m-%d_%H-%M-%S", contains=None
-):
-    """Return the most recent directory based on the date in the folder name.
-
-    Args:
-        root_dir: The directory to search in
-        date_format: The format of the date in the folder name
-        contains: If not None, only consider folders that contains this string
-
-    Returns:
-        Path: The most recent folder satisfying the conditions
-    """
-
-    if root_dir is None:
-        root_dir = RESULTS_DIR
-
-    most_recent_folder = None
-    most_recent_time = datetime.min
-
-    for item in root_dir.iterdir():
-        if item.is_dir() and not item.name.startswith("_"):
-            if contains is not None and contains not in item.name:
-                continue
-            try:
-                folder_date = datetime.strptime("_".join(item.name.split("_")[:2]), date_format)
-                if folder_date > most_recent_time:
-                    most_recent_time = folder_date
-                    most_recent_folder = item
-            except (ValueError, IndexError):
-                continue
-
-    return most_recent_folder
-
-
 def display_report(
     report: pd.DataFrame,
     apply_shrink_columns: bool = True,
@@ -615,10 +583,12 @@ def set_wrap_style(df):
 # ------------
 
 
-def map_err_key(err_msg):
+def map_err_key(err_msg: str):
     if err_msg is None:
         return err_msg
 
+    # remove logs from the message if any
+    err_msg = err_msg[: err_msg.find("=== logs ===")].rstrip()
     regex_replacements = [
         (
             r"your messages resulted in \d+ tokens",
@@ -635,7 +605,7 @@ def map_err_key(err_msg):
     return err_msg
 
 
-def error_report(df: pd.DataFrame, max_stack_trace=10):
+def error_report(df: pd.DataFrame, max_stack_trace=10, use_log=False):
     """Report the error message for each agent."""
 
     if "err_key" not in df:
@@ -645,33 +615,60 @@ def error_report(df: pd.DataFrame, max_stack_trace=10):
     report = []
     for err_key, count in unique_counts.items():
         report.append("-------------------")
-        report.append(f"{count}x : {err_key}\n")
+        report.append(f"## {count}x : " + err_key.replace("\n", "<br>") + "\n")
+
         # find sub_df with this error message
         sub_df = df[df["err_key"] == err_key]
         idx = 0
 
         exp_result_list = [get_exp_result(row.exp_dir) for _, row in sub_df.iterrows()]
-        task_names = [exp_result.exp_args.env_args.task_name for exp_result in exp_result_list]
-
-        # count unique using numpy
-        unique_task_names, counts = np.unique(task_names, return_counts=True)
-        task_and_count = sorted(zip(unique_task_names, counts), key=lambda x: x[1], reverse=True)
-        for task_name, count in task_and_count:
-            report.append(f"{count:2d} {task_name}")
+        exp_result_list = sorted(exp_result_list, key=lambda x: x.exp_args.env_args.task_name)
+        for exp_result in exp_result_list:
+            report.append(
+                f"* {exp_result.exp_args.env_args.task_name} seed: {exp_result.exp_args.env_args.task_seed}"
+            )
 
         report.append(f"\nShowing Max {max_stack_trace} stack traces:\n")
         for exp_result in exp_result_list:
             if idx >= max_stack_trace:
                 break
-            # print task name and stack trace
-            stack_trace = exp_result.summary_info.get("stack_trace", "")
-            report.append(f"Task Name: {exp_result.exp_args.env_args.task_name}\n")
-            report.append(f"exp_dir: {exp_result.exp_dir}\n")
-            report.append(f"Stack Trace: \n {stack_trace}\n")
-            report.append("\n")
+
+            if not use_log:
+                # print task name and stack trace
+                stack_trace = exp_result.summary_info.get("stack_trace", "")
+                report.append(f"Task Name: {exp_result.exp_args.env_args.task_name}\n")
+                report.append(f"exp_dir: {exp_result.exp_dir}\n")
+                report.append(f"Stack Trace: \n {stack_trace}\n")
+                report.append("\n")
+            else:
+                report.append(f"```bash\n{_format_log(exp_result)}\n```")
+
             idx += 1
 
     return "\n".join(report)
+
+
+def _format_log(exp_result: ExpResult, head_lines=10, tail_lines=50):
+    """Extract head and tail of the log. Try to find the traceback."""
+    log = exp_result.logs
+    if log is None:
+        return "No log found"
+
+    log_lines = log.split("\n")
+    if len(log_lines) <= head_lines + tail_lines:
+        return log
+
+    # first 10 lines:
+    log_head = "\n".join(log_lines[:head_lines])
+
+    try:
+        traceback_idx = log.rindex("Traceback (most recent call last):")
+        tail_idx = log.rindex("action:", 0, traceback_idx)
+        log_tail = log[tail_idx:]
+    except ValueError:
+        log_tail = "\n".join(log_lines[-tail_lines:])
+
+    return log_head + "\n...\n...truncated middle of the log\n...\n" + log_tail
 
 
 def categorize_error(row):
