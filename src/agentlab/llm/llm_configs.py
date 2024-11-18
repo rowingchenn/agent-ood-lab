@@ -100,7 +100,7 @@ CHAT_MODEL_ARGS_DICT = {
         vision_support=True,
     ),
     "azure/gpt-4o-mini-2024-07-18": AzureModelArgs(
-        model_name="gpt-4o-mini",
+        model_name_or_path="gpt-4o-mini",
         deployment_name="gpt-4o-mini-2024-07-18",
         max_total_tokens=128_000,
         max_input_tokens=128_000,
@@ -184,7 +184,7 @@ CHAT_MODEL_ARGS_DICT = {
         temperature=1e-1,
     ),
     "openrouter/openai/o1-mini-2024-09-12": OpenRouterModelArgs(
-        model_name="openai/o1-mini-2024-09-12",
+        model_name_or_path="openai/o1-mini-2024-09-12",
         max_total_tokens=128_000,
         max_input_tokens=128_000,
         max_new_tokens=64_000,

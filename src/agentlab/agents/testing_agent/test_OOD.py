@@ -65,6 +65,12 @@ AGENT_TEST = GenericAgentArgs(
     max_retry=3,
 )
 
+OOD_TASKS_ARGS = {
+        "ood_task_type": "advertisement",
+        "ood_task_id": 1,
+        "ood_insert_steps": [2],
+    }
+
 
 def main():
     exp_dir = "./test_OOD/"
@@ -81,6 +87,7 @@ def main():
             agent_args=AGENT_TEST,
             env_args=env_args,
             logging_level=logging.INFO,
+            ood_args=OOD_TASKS_ARGS
         ),
     ]
 

@@ -39,7 +39,7 @@ FLAGS_TEST = GenericPromptFlags(
     ),
     action=dp.ActionFlags(
         multi_actions=False,
-        action_set="bid", # change to benchmark specific action set!
+        action_set="webarena", # will be overwritten by set_benchmark
         long_description=False,
         individual_examples=True,
     ),
@@ -57,8 +57,8 @@ FLAGS_TEST = GenericPromptFlags(
 )
 
 AGENT_TEST = GenericAgentArgs(
-    # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o"],
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
+    # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4-1106-preview"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["local/Qwen2.5-7B-Instruct"],
     flags=FLAGS_TEST,
@@ -68,9 +68,10 @@ AGENT_TEST = GenericAgentArgs(
 
 def main():
     exp_dir = "./test_ID/"
+    demo_mode = False
 
     env_args = bgym.EnvArgs(
-        task_name="webarena.692",
+        task_name="workarena.servicenow.workload-balancing-small-l2",
         task_seed=89,
         max_steps=15,
         headless=False,
@@ -85,6 +86,8 @@ def main():
     ]
 
     for exp_args in exp_args_list:
+        benchmark = bgym.DEFAULT_BENCHMARKS["webarena"]()
+        exp_args.agent_args.set_benchmark(benchmark, demo_mode=demo_mode) # Override Some flags based on the benchmark.
         exp_args.agent_args.prepare()
         exp_args.prepare(exp_root=exp_dir)
         logging.info(f"Ready to run {exp_args}.")
