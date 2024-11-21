@@ -1,5 +1,5 @@
 import bgym
-from browsergym.experiments import EnvArgs
+from browsergym.experiments import EnvArgs, ExpArgs, get_exp_result
 from agentlab.agents import dynamic_prompting as dp
 from agentlab.agents.generic_agent.generic_agent import GenericAgentArgs
 from agentlab.agents.generic_agent.generic_agent_prompt import GenericPromptFlags
@@ -66,9 +66,9 @@ AGENT_TEST = GenericAgentArgs(
 )
 
 OOD_TASKS_ARGS = {
-        "ood_task_type": "advertisement",
         "ood_task_id": 1,
-        "ood_insert_steps": [2],
+        "ood_insert_step": 5,
+        "ood_max_steps": 5,
     }
 
 
@@ -76,17 +76,23 @@ def main():
     exp_dir = "./test_OOD/"
 
     env_args = bgym.EnvArgs(
-        task_name="webarena.692",
+        # task_name="webarena.692",
+        task_name="workarena.servicenow.order-standard-laptop",
         task_seed=89,
         max_steps=15,
         headless=False,
     )
 
+    if env_args.task_name == "openended":
+        AGENT_TEST.chat_mode = True
+        env_args.wait_for_user_message = True
+        env_args.task_kwargs = {"start_url": "https://www.google.com"}
+    
     exp_args_list = [
         bgym.ExpArgs(
             agent_args=AGENT_TEST,
             env_args=env_args,
-            logging_level=logging.INFO,
+            logging_level=logging.DEBUG,
             ood_args=OOD_TASKS_ARGS
         ),
     ]
@@ -99,8 +105,13 @@ def main():
         logging.info("All jobs are finished. Calling agent_args.close() on all agents...")
         exp_args.agent_args.close()
         logging.info("Experiment finished.")
+        # TODO: add ood result information to ExpResult
+        # loading and printing results
+        # exp_result = get_exp_result(exp_args.exp_dir)
+        # exp_record = exp_result.get_exp_record()
+        # for key, val in exp_record.items():
+        #     print(f"{key}: {val}")
 
 
-# 检查是否是主程序
 if __name__ == "__main__":
     main()
