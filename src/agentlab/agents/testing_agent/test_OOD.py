@@ -66,8 +66,9 @@ AGENT_TEST = GenericAgentArgs(
 )
 
 OOD_TASKS_ARGS = {
+        "ood_task_type": "advertisement",
         "ood_task_id": 1,
-        "ood_insert_step": 5,
+        "ood_insert_step": 2,
         "ood_max_steps": 5,
     }
 
@@ -77,14 +78,15 @@ def main():
 
     env_args = bgym.EnvArgs(
         # task_name="webarena.692",
-        task_name="workarena.servicenow.order-standard-laptop",
+        task_name="workarena.servicenow.infeasible-navigate-and-order-apple-mac-book-pro15-l2", # L2 is multi-tab
         task_seed=89,
         max_steps=15,
         headless=False,
+        timeout=30000
     )
 
     if env_args.task_name == "openended":
-        AGENT_TEST.chat_mode = True
+        AGENT_TEST.flag.enable_chat = True
         env_args.wait_for_user_message = True
         env_args.task_kwargs = {"start_url": "https://www.google.com"}
     
@@ -98,6 +100,8 @@ def main():
     ]
 
     for exp_args in exp_args_list:
+        benchmark = bgym.DEFAULT_BENCHMARKS["workarena_l2_agent_curriculum_eval"]()
+        exp_args.agent_args.set_benchmark(benchmark, demo_mode=True) # Override Some flags based on the benchmark.
         exp_args.agent_args.prepare()
         exp_args.prepare(exp_root=exp_dir)
         logging.info(f"Ready to run {exp_args}.")
