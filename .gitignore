@@ -168,3 +168,7 @@ results/
 
 # gradio
 .gradio/
+
+# Test results
+src/agentlab/agents/testing_agent/test_ID
+src/agentlab/agents/testing_agent/inspect.ipynb 

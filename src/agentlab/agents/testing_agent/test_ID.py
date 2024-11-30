@@ -1,5 +1,5 @@
 import bgym
-from browsergym.experiments import EnvArgs
+from browsergym.experiments import EnvArgs, ExpArgs, get_exp_result
 from agentlab.agents import dynamic_prompting as dp
 from agentlab.agents.generic_agent.generic_agent import GenericAgentArgs
 from agentlab.agents.generic_agent.generic_agent_prompt import GenericPromptFlags
@@ -39,7 +39,7 @@ FLAGS_TEST = GenericPromptFlags(
     ),
     action=dp.ActionFlags(
         multi_actions=False,
-        action_set="webarena", # will be overwritten by set_benchmark
+        action_set="bid",  # change to benchmark specific action set!
         long_description=False,
         individual_examples=True,
     ),
@@ -58,7 +58,7 @@ FLAGS_TEST = GenericPromptFlags(
 
 AGENT_TEST = GenericAgentArgs(
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o"],
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-2024-05-13"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4-1106-preview"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["local/Qwen2.5-7B-Instruct"],
     flags=FLAGS_TEST,
@@ -68,15 +68,20 @@ AGENT_TEST = GenericAgentArgs(
 
 def main():
     exp_dir = "./test_ID/"
-    demo_mode = False
 
     env_args = bgym.EnvArgs(
-        # task_name="workarena.servicenow.workload-balancing-small-l2",
-        task_name="workarena.servicenow.order-standard-laptop",
+        # task_name="webarena.692",
+        # task_name="workarena.servicenow.infeasible-navigate-and-order-apple-mac-book-pro15-l2",  # L2 is multi-tab
+        task_name="workarena.servicenow.workload-balancing-small-l2",
         task_seed=89,
         max_steps=15,
         headless=False,
     )
+
+    if env_args.task_name == "openended":
+        AGENT_TEST.flag.enable_chat = True
+        env_args.wait_for_user_message = True
+        env_args.task_kwargs = {"start_url": "https://www.google.com"}
 
     exp_args_list = [
         bgym.ExpArgs(
@@ -87,8 +92,10 @@ def main():
     ]
 
     for exp_args in exp_args_list:
-        benchmark = bgym.DEFAULT_BENCHMARKS["workarena_l1"]()
-        exp_args.agent_args.set_benchmark(benchmark, demo_mode=demo_mode) # Override Some flags based on the benchmark.
+        benchmark = bgym.DEFAULT_BENCHMARKS["workarena_l2_agent_curriculum_eval"]()
+        exp_args.agent_args.set_benchmark(
+            benchmark, demo_mode=True
+        )  # Override Some flags based on the benchmark.
         exp_args.agent_args.prepare()
         exp_args.prepare(exp_root=exp_dir)
         logging.info(f"Ready to run {exp_args}.")
@@ -96,8 +103,13 @@ def main():
         logging.info("All jobs are finished. Calling agent_args.close() on all agents...")
         exp_args.agent_args.close()
         logging.info("Experiment finished.")
+        # TODO: add ood result information to ExpResult
+        # loading and printing results
+        # exp_result = get_exp_result(exp_args.exp_dir)
+        # exp_record = exp_result.get_exp_record()
+        # for key, val in exp_record.items():
+        #     print(f"{key}: {val}")
 
 
-# 检查是否是主程序
 if __name__ == "__main__":
     main()
