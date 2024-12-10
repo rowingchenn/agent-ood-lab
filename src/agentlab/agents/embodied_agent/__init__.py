@@ -1,4 +1,4 @@
-from .agent_configs import (
+from agentlab.agents.generic_agent.agent_configs import (
     AGENT_3_5,
     AGENT_8B,
     AGENT_LLAMA3_70B,

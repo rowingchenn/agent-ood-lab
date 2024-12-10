@@ -3,7 +3,8 @@ from dataclasses import dataclass
 
 from browsergym.core.action.base import AbstractActionSet
 
-from agentlab.agents import alfworld_dynamic_prompting as dp
+from agentlab.agents import dynamic_prompting as dp
+from agentlab.agents.embodied_agent import alfworld_dynamic_prompting as adp
 
 from agentlab.llm.llm_utils import HumanMessage
 
@@ -26,14 +27,14 @@ class AlfworldPromptFlags(dp.Flags):
         add_missparsed_messages (bool): When retrying, add the missparsed messages to the prompt.
     """
 
-    obs: dp.AlfworldObsFlags
-    action: dp.AlfworldActionFlags
+    obs: adp.ObsFlags
+    actions: adp.ActionFlags
     use_plan: bool = False
     use_criticise: bool = False
     use_thinking: bool = False
     use_concrete_example: bool = True
     use_hints: bool = False
-    enable_chat: bool = False
+    enable_chat: bool = False  # Currently not supported
     max_prompt_tokens: int = None
     be_cautious: bool = True
     extra_instructions: str | None = None
@@ -41,10 +42,22 @@ class AlfworldPromptFlags(dp.Flags):
 
 
 # TODO: 设计alfworld的prompt
-class AlfworldPrompt(dp.MainPrompt):
+class AlfworldPrompt(dp.Shrinkable):
+    """
+    Attributes:
+        info: Contains the admissable actions.
+        obs_history (list[dict]): The history of observations.
+        actions (list[str]): The list of actions taken by the agent.
+        memories (list[str]): The list of memories.
+        thoughts (list[str]): The list of thoughts.
+        previous_plan (str): The previous plan.
+        step (int): The current step.
+        flags (AlfworldPromptFlags): The flags used to control the features in the agent.
+    """
+
     def __init__(
         self,
-        action_set: AbstractActionSet,
+        info,
         obs_history: list[dict],
         actions: list[str],
         memories: list[str],
@@ -53,34 +66,31 @@ class AlfworldPrompt(dp.MainPrompt):
         step: int,
         flags: AlfworldPromptFlags,
     ) -> None:
-        super().__init__(
-            action_set, obs_history, actions, memories, thoughts, previous_plan, step, flags
-        )
+        super().__init__()
         self.flags = flags
-        self.history = dp.History(obs_history, actions, memories, thoughts, flags.obs)
+        self.history = adp.History(obs_history, actions, memories, thoughts, flags.obs)
         if self.flags.enable_chat:
-            self.instructions = dp.ChatInstructions(
-                obs_history[-1]["chat_messages"], extra_instructions=flags.extra_instructions
-            )
+            # self.instructions = dp.ChatInstructions(
+            #     obs_history[-1]["chat_messages"], extra_instructions=flags.extra_instructions
+            # )
+            pass
         else:
             if sum([msg["role"] == "user" for msg in obs_history[-1].get("chat_messages", [])]) > 1:
                 logging.warning(
                     "Agent is in goal mode, but multiple user messages are present in the chat. Consider switching to `enable_chat=True`."
                 )
-            self.instructions = dp.GoalInstructions(
+            self.instructions = adp.GoalInstructions(
                 obs_history[-1]["goal_object"], extra_instructions=flags.extra_instructions
             )
 
-        self.obs = dp.Observation(obs_history[-1], flags.obs)
-
-        self.action_prompt = dp.ActionPrompt(action_set, action_flags=flags.action)
-
-        self.be_cautious = dp.BeCautious(visible=lambda: flags.be_cautious)
-        self.think = dp.Think(visible=lambda: flags.use_thinking)
-        self.hints = dp.Hints(visible=lambda: flags.use_hints)
-        self.plan = dp.Plan(previous_plan, step, lambda: flags.use_plan)  # TODO add previous plan
-        self.criticise = dp.Criticise(visible=lambda: flags.use_criticise)  # TODO
-        self.memory = dp.Memory(visible=lambda: flags.use_memory)  # TODO
+        self.obs = adp.Observation(obs_history[-1], flags.obs)
+        self.action_prompt = dp.ActionPrompt(info, action_flags=flags.actions)
+        self.be_cautious = adp.BeCautious(visible=lambda: flags.be_cautious)
+        self.think = adp.Think(visible=lambda: flags.use_thinking)
+        self.hints = adp.Hints(visible=lambda: flags.use_hints)
+        self.plan = adp.Plan(previous_plan, step, lambda: flags.use_plan)  # TODO add previous plan
+        self.criticise = adp.Criticise(visible=lambda: flags.use_criticise)  # TODO
+        self.memory = adp.Memory(visible=lambda: flags.use_memory)  # TODO
 
     @property
     def _prompt(self) -> HumanMessage:
@@ -90,11 +100,12 @@ class AlfworldPrompt(dp.MainPrompt):
 {self.obs.prompt}\
 {self.history.prompt}\
 {self.action_prompt.prompt}\
-{self.criticise.prompt}\
+{self.hints.prompt}\
 {self.be_cautious.prompt}\
+{self.think.prompt}\
 {self.plan.prompt}\
 {self.memory.prompt}\
-{self.thinking.prompt}\
+{self.criticise.prompt}\
 """
         )
 
@@ -113,5 +124,34 @@ Make sure to follow the template with proper tags:
 """
             )
         if self.flags.use_abstract_example:
-            prompt.add_text(self.action_prompt.abstract_ex)
+            prompt.add_text(
+                f"""
+# Abstract Example
+
+Here is an abstract version of the answer with description of the content of
+each tag. Make sure you follow this structure, but replace the content with your
+answer:
+{self.think.abstract_ex}\
+{self.plan.abstract_ex}\
+{self.memory.abstract_ex}\
+{self.criticise.abstract_ex}\
+{self.action_prompt.abstract_ex}\
+"""
+            )
+
+        if self.flags.use_concrete_example:
+            prompt.add_text(
+                f"""
+# Concrete Example
+
+Here is a concrete example of how to format your answer.
+Make sure to follow the template with proper tags:
+{self.think.concrete_ex}\
+{self.plan.concrete_ex}\
+{self.memory.concrete_ex}\
+{self.criticise.concrete_ex}\
+{self.action_prompt.concrete_ex}\
+"""
+            )
+
         return prompt
