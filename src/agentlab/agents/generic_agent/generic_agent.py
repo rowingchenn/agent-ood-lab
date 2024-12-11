@@ -2,7 +2,7 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass
 from functools import partial
 from warnings import warn
-
+import logging
 import bgym
 from browsergym.experiments.agent import Agent, AgentInfo
 
@@ -13,6 +13,8 @@ from agentlab.llm.llm_utils import Discussion, ParseError, SystemMessage, retry
 from agentlab.llm.tracking import cost_tracker_decorator
 
 from .generic_agent_prompt import GenericPromptFlags, MainPrompt
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -111,11 +113,13 @@ class GenericAgent(Agent):
             max_iterations=max_trunc_itr,
             additional_prompts=system_prompt,
         )
+
         try:
             # TODO, we would need to further shrink the prompt if the retry
             # cause it to be too long
 
             chat_messages = Discussion([system_prompt, human_prompt])
+            logger.info(f"FULL PROMPT:\n {chat_messages}")
             ans_dict = retry(
                 self.chat_llm,
                 chat_messages,

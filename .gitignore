@@ -170,5 +170,6 @@ results/
 .gradio/
 
 # Test results
-src/agentlab/agents/testing_agent/test_ID
+src/agentlab/agents/testing_agent/test_browser_id_results
+src/agentlab/agents/testing_agent/test_browser_ood_results
 src/agentlab/agents/testing_agent/inspect.ipynb 
