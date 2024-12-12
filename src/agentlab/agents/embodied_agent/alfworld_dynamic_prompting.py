@@ -46,6 +46,10 @@ class ObsFlags(dp.Flags):
     use_action_history: bool = False
     use_think_history: bool = False
 
+    include_pddl_state: bool = True
+    include_high_level_plan: bool = True
+    include_scene_description: bool = True
+
 
 # TODO: 目前只有is_strict这一个flag，主要是因为alfworld获取actions都是每一步当场获取admisible_commands
 # 没办法像BrowserGym那样固定一个action_set并配置prompt
@@ -76,8 +80,6 @@ class Error(dp.PromptElement):
 # TODO: 应该为TextWorld返回的文字
 class Observation(dp.PromptElement):
     """Observation of the current step.
-
-    Contains the html, the accessibility tree and the error logs.
     """
 
     def __init__(self, obs, flags: ObsFlags) -> None:
@@ -87,19 +89,34 @@ class Observation(dp.PromptElement):
 
         self.env_description = obs["env_description"]
 
-    def shrink(self):
-        pass
+        self.scene = obs.get("scene", {})
+        self.plan = obs.get("plan", {})
+        self.pddl_state = obs.get("pddl_params", {})
+        self.high_level_plan = obs.get("plan", {}).get("high_pddl", [])
+        self.scene_description = obs.get("turk_annotations", {}).get("anns", [{}])[0].get("task_desc", "No description available.")
 
     @property
     def _prompt(self) -> str:
-        return f"""
-# Observation of current step:
-{self.env_description}
+        prompt = "# Observation:\n"
 
-"""
+        if self.flags.include_scene_description:
+            prompt += f"Scene Description: {self.scene_description}\n\n"
 
-    def add_screenshot(self, prompt: BaseMessage) -> BaseMessage:
+        if self.flags.include_pddl_state:
+            prompt += f"PDDL State:\n{self.pddl_state}\n\n"
+
+        if self.flags.include_high_level_plan:
+            prompt += "High-Level Plan:\n"
+            for step in self.high_level_plan:
+                action = step.get("discrete_action", {}).get("action", "No action")
+                args = step.get("discrete_action", {}).get("args", [])
+                prompt += f"  - Action: {action}, Args: {args}\n"
+
+        return prompt
+
+    def shrink(self):
         pass
+
 
 
 class BeCautious(dp.PromptElement):
@@ -159,6 +176,13 @@ class Hints(dp.PromptElement):
     # NOTE: are these hints still relevant?
     _prompt = """\
 Note:
+* Carefully analyze the current environment and observe any clues in the scene description.
+* Some tasks may require chaining multiple actions together to achieve a goal.
+* Objects in the environment often need to be manipulated in a logical sequence. For example, open a container before retrieving an item inside.
+* Pay close attention to the available actions and their arguments for choosing the most effective step.
+* If an action fails, review previous observations or errors for possible reasons.
+* Ensure that all required objects are in the correct state before proceeding to subsequent actions.
+* Some tasks may involve exploration. Consider trying safe actions to gather more information.
 """
 
 
@@ -223,16 +247,25 @@ class ActionPrompt(dp.PromptElement):
 
 # TODO: prompt设计待完成，针对alfworld的thinking
 class Think(dp.PromptElement):
-    _prompt = ""
+    _prompt = """
+# Think:
+Consider the current state of the environment and formulate a step-by-step reasoning process.
+Explain why this step is necessary and how it contributes to the overall goal.
+"""
 
     _abstract_ex = """
 <think>
-Think step by step. 
+Think step by step. For example:
+1. Observe the current state and identify necessary actions.
+2. Break down the task into smaller, actionable steps.
+3. Justify each step logically, ensuring alignment with the goal.
 </think>
 """
     _concrete_ex = """
 <think>
-
+1. The alarm clock is on the dresser. I need to pick it up first.
+2. After that, I should locate the lamp and turn it on.
+3. This sequence ensures that I complete the goal of examining the alarm clock in proper lighting.
 </think>
 """
 
@@ -328,43 +361,86 @@ class History(dp.Shrinkable):
         return "\n".join(prompts) + "\n"
 
 
+# def make_obs_preprocessor(flags: ObsFlags):
+    # def obs_mapping(obs: dict):
+    #     obs = copy(obs)
+    #     obs["dom_txt"] = flatten_dom_to_str(
+    #         obs["dom_object"],
+    #         extra_properties=obs["extra_element_properties"],
+    #         with_visible=flags.extract_visible_tag,
+    #         with_clickable=flags.extract_clickable_tag,
+    #         with_center_coords=flags.extract_coords == "center",
+    #         with_bounding_box_coords=flags.extract_coords == "box",
+    #         filter_visible_only=flags.filter_visible_elements_only,
+    #         filter_with_bid_only=flags.filter_with_bid_only,
+    #         filter_som_only=flags.filter_som_only,
+    #     )
+    #     obs["axtree_txt"] = flatten_axtree_to_str(
+    #         obs["axtree_object"],
+    #         extra_properties=obs["extra_element_properties"],
+    #         with_visible=flags.extract_visible_tag,
+    #         with_clickable=flags.extract_clickable_tag,
+    #         with_center_coords=flags.extract_coords == "center",
+    #         with_bounding_box_coords=flags.extract_coords == "box",
+    #         filter_visible_only=flags.filter_visible_elements_only,
+    #         filter_with_bid_only=flags.filter_with_bid_only,
+    #         filter_som_only=flags.filter_som_only,
+    #     )
+    #     obs["pruned_html"] = prune_html(obs["dom_txt"])
+    #     obs["screenshot_som"] = overlay_som(
+    #         obs["screenshot"], extra_properties=obs["extra_element_properties"]
+    #     )
+
+    #     return obs
+
+
 def make_obs_preprocessor(flags: ObsFlags):
-    def obs_mapping(obs: dict):
-        obs = copy(obs)
-        obs["dom_txt"] = flatten_dom_to_str(
-            obs["dom_object"],
-            extra_properties=obs["extra_element_properties"],
-            with_visible=flags.extract_visible_tag,
-            with_clickable=flags.extract_clickable_tag,
-            with_center_coords=flags.extract_coords == "center",
-            with_bounding_box_coords=flags.extract_coords == "box",
-            filter_visible_only=flags.filter_visible_elements_only,
-            filter_with_bid_only=flags.filter_with_bid_only,
-            filter_som_only=flags.filter_som_only,
-        )
-        obs["axtree_txt"] = flatten_axtree_to_str(
-            obs["axtree_object"],
-            extra_properties=obs["extra_element_properties"],
-            with_visible=flags.extract_visible_tag,
-            with_clickable=flags.extract_clickable_tag,
-            with_center_coords=flags.extract_coords == "center",
-            with_bounding_box_coords=flags.extract_coords == "box",
-            filter_visible_only=flags.filter_visible_elements_only,
-            filter_with_bid_only=flags.filter_with_bid_only,
-            filter_som_only=flags.filter_som_only,
-        )
-        obs["pruned_html"] = prune_html(obs["dom_txt"])
-        obs["screenshot_som"] = overlay_som(
-            obs["screenshot"], extra_properties=obs["extra_element_properties"]
-        )
+    def preprocess_obs(obs: dict) -> dict:
+        """
+        Process a raw observation dictionary to extract relevant information.
 
-        return obs
+        Args:
+            obs (dict): Raw observation data.
 
-    return obs_mapping
+        Returns:
+            dict: Processed observation data, enriched with structured information.
+        """
+        processed_obs = obs.copy()
+
+        # Include scene description if specified
+        if flags.include_scene_description:
+            processed_obs["scene_description"] = obs.get(
+                "turk_annotations", {}
+            ).get("anns", [{}])[0].get("task_desc", "No scene description provided.")
+
+        # Include PDDL state if specified
+        if flags.include_pddl_state:
+            processed_obs["pddl_state"] = obs.get("pddl_params", {})
+
+        # Include high-level plan if specified
+        if flags.include_high_level_plan:
+            high_pddl = obs.get("plan", {}).get("high_pddl", [])
+            processed_obs["high_level_plan"] = [
+                {
+                    "action": step.get("discrete_action", {}).get("action", "Unknown"),
+                    "args": step.get("discrete_action", {}).get("args", [])
+                }
+                for step in high_pddl
+            ]
+
+        return processed_obs
+
+    return preprocess_obs
 
 
 class Memory(dp.PromptElement):
-    _prompt = ""  # provided in the abstract and concrete examples
+    _prompt = """
+<memory>
+Write down anything you need to remember for the next steps. Use this space to note
+important details, observations, or actions that could guide your decision-making
+in future steps.
+</memory>
+"""
 
     _abstract_ex = """
 <memory>
@@ -376,8 +452,8 @@ remember hints from previous steps in order to solve it.
 
     _concrete_ex = """
 <memory>
-I clicked on bid "32" to activate tab 2. The accessibility tree should mention
-focusable for elements of the form at next step.
+I picked up the alarm clock from the dresser. Next, I need to turn on the lamp
+to complete the task of examining the clock under proper lighting.
 </memory>
 """
 
@@ -399,32 +475,31 @@ relevant and update it if necessary.
 
     _abstract_ex = """
 <plan>
-Provide a multi step plan that will guide you to accomplish the goal. There
-should always be steps to verify if the previous action had an effect. The plan
-can be revisited at each steps. Specifically, if there was something unexpected.
-The plan should be cautious and favor exploring befor submitting.
+Provide a step-by-step plan to accomplish the goal. The plan should include:
+1. Logical actions in sequence.
+2. Verification steps to ensure actions have the desired effect.
+3. Adaptability to adjust the plan if something unexpected occurs.
+
+For example:
+1. Observe the environment.
+2. Interact with an object (e.g., pick up the key).
+3. Use the object to achieve the goal (e.g., unlock the door).
 </plan>
 
-<step>Integer specifying the step of current action
+<step>Integer specifying the current step of the plan.
 </step>
 """
 
     _concrete_ex = """
 <plan>
-1. fill form (failed)
-    * type first name
-    * type last name
-2. Try to activate the form
-    * click on tab 2
-3. fill form again
-    * type first name
-    * type last name
-4. verify and submit
-    * verify form is filled
-    * submit if filled, if not, replan
+1. Locate the book on the shelf.
+2. Retrieve the book and place it on the table.
+3. Open the book to the specified page.
+4. Verify that the information matches the goal requirements.
+5. If the information is incorrect, replan and search for another source.
 </plan>
 
-<step>2</step>
+<step>3</step>
 """
 
     def _parse_answer(self, text_answer):
@@ -441,19 +516,20 @@ Write a first version of what you think is the right action.
 
 <criticise>
 Criticise action_draft. What could be wrong with it? Enumerate reasons why it
-could fail. Did your past actions had the expected effect? Make sure you're not
+could fail. Did your past actions have the expected effect? Make sure you're not
 repeating the same mistakes.
 </criticise>
 """
 
     _concrete_ex = """
 <action_draft>
-click("32")
+pick_up("red_apple")
 </action_draft>
 
 <criticise>
-click("32") might not work because the element is not visible yet. I need to
-explore the page to find a way to activate the form.
+The action 'pick_up("red_apple")' might fail because the apple is in a locked container.
+I need to unlock the container first. Additionally, the action might fail if the apple
+is not within reach or already in my inventory.
 </criticise>
 """
 

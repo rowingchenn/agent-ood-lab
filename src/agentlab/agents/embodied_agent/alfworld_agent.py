@@ -53,7 +53,7 @@ class AlfworldAgent(Agent):
         self.max_retry = max_retry
 
     def obs_preprocessor(self, obs):
-        pass
+        return self._obs_preprocessor(obs)
 
     @cost_tracker_decorator
     def get_action(self, obs):
