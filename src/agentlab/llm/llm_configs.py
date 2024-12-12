@@ -7,7 +7,7 @@ from agentlab.llm.chat_api import (
 )
 
 default_oss_llms_args = {
-    "n_retry_server": 4,
+    "n_retry_server": 3,
     "temperature": 0.01,
 }
 
@@ -20,7 +20,7 @@ CLOSED_SOURCE_APIS = [
 CHAT_MODEL_ARGS_DICT = {
     "openai/gpt-4o-mini": OpenAIModelArgs(
         model_name_or_path="gpt-4o-mini",
-        max_total_tokens=128_000,
+        max_total_tokens=256_000,
         max_input_tokens=80_000,  # input limit of 4o-mini is 128,000 tokens. Prompt shrink based on max_input_tokens.
         max_new_tokens=4000,  # output limit of 4o-mini is 16,384 tokens
     ),
