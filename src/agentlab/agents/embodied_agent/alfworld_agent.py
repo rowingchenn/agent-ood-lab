@@ -1,12 +1,18 @@
-from dataclasses import dataclass
 
-from .alfworld_agent_prompt import AlfworldPromptFlags
+from dataclasses import asdict, dataclass
+import logging
 
 from browsergym.experiments.agent import Agent, AgentInfo
 from agentlab.agents.agent_args import AgentArgs
 from agentlab.agents.embodied_agent import alfworld_dynamic_prompting as dp
 from agentlab.llm.chat_api import BaseModelArgs
 from agentlab.llm.tracking import cost_tracker_decorator
+from agentlab.llm.llm_utils import Discussion, ParseError, SystemMessage, retry
+
+
+from .alfworld_agent_prompt import AlfworldPrompt, AlfworldPromptFlags
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -57,10 +63,79 @@ class AlfworldAgent(Agent):
 
     @cost_tracker_decorator
     def get_action(self, obs):
-        pass
+        self.obs_history.append(obs)
+
+        main_prompt = AlfworldPrompt(
+            action_set=self.action_set,
+            obs_history=self.obs_history,
+            actions=self.actions,
+            memories=self.memories,
+            thoughts=self.thoughts,
+            previous_plan=self.plan,
+            step=self.plan_step,
+            flags=self.flags,
+        )
+
+        max_prompt_tokens, max_trunc_itr = self._get_maxes()
+
+        system_prompt = SystemMessage(dp.SystemPrompt().prompt)
+
+        human_prompt = dp.fit_tokens(
+            shrinkable=main_prompt,
+            max_prompt_tokens=max_prompt_tokens,
+            model_name=self.chat_model_args.model_name_or_path,
+            max_iterations=max_trunc_itr,
+            additional_prompts=system_prompt,
+        )
+
+        try:
+            # TODO, we would need to further shrink the prompt if the retry
+            # cause it to be too long
+            chat_messages = Discussion([system_prompt, human_prompt])
+            logger.info(f"FULL PROMPT:\n {chat_messages}")
+            ans_dict = retry(
+                self.chat_llm,
+                chat_messages,
+                n_retry=self.max_retry,
+                parser=main_prompt._parse_answer,
+            )
+            ans_dict["busted_retry"] = 0
+            # inferring the number of retries, TODO: make this less hacky
+            ans_dict["n_retry"] = (len(chat_messages) - 3) / 2
+        except ParseError as e:
+            ans_dict = dict(
+                action=None,
+                n_retry=self.max_retry + 1,
+                busted_retry=1,
+            )
+
+        stats = self.chat_llm.get_stats()
+        stats["n_retry"] = ans_dict["n_retry"]
+        stats["busted_retry"] = ans_dict["busted_retry"]
+
+        self.plan = ans_dict.get("plan", self.plan)
+        self.plan_step = ans_dict.get("step", self.plan_step)
+        self.actions.append(ans_dict["action"])
+        self.memories.append(ans_dict.get("memory", None))
+        self.thoughts.append(ans_dict.get("think", None))
+
+        agent_info = AgentInfo(
+            think=ans_dict.get("think", None),
+            chat_messages=chat_messages,
+            stats=stats,
+            extra_info={"chat_model_args": asdict(self.chat_model_args)},
+        )
+        return ans_dict["action"], agent_info
+
 
     def reset(self, seed=None):
-        pass
+        self.seed = seed
+        self.plan = "No plan yet"
+        self.plan_step = -1
+        self.memories = []
+        self.thoughts = []
+        self.actions = []
+        self.obs_history = []
 
     def run(self, info: AgentInfo):
         pass

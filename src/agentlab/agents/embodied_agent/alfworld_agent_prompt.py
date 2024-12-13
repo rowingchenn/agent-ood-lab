@@ -116,7 +116,7 @@ class AlfworldPrompt(dp.Shrinkable):
 
 Here is a concrete example of how to format your answer.
 Make sure to follow the template with proper tags:
-{self.thinking.concrete_ex}\
+{self.think.concrete_ex}\
 {self.plan.concrete_ex}\
 {self.memory.concrete_ex}\
 {self.criticise.concrete_ex}\

@@ -46,9 +46,9 @@ class ObsFlags(dp.Flags):
     use_action_history: bool = False
     use_think_history: bool = False
 
-    include_pddl_state: bool = True
-    include_high_level_plan: bool = True
-    include_scene_description: bool = True
+    # include_pddl_state: bool = True
+    # include_high_level_plan: bool = True
+    # include_scene_description: bool = True
 
 
 # TODO: 目前只有is_strict这一个flag，主要是因为alfworld获取actions都是每一步当场获取admisible_commands
@@ -87,30 +87,22 @@ class Observation(dp.PromptElement):
         self.flags = flags
         self.obs = obs
 
-        self.env_description = obs["env_description"]
-
-        self.scene = obs.get("scene", {})
-        self.plan = obs.get("plan", {})
-        self.pddl_state = obs.get("pddl_params", {})
-        self.high_level_plan = obs.get("plan", {}).get("high_pddl", [])
-        self.scene_description = obs.get("turk_annotations", {}).get("anns", [{}])[0].get("task_desc", "No description available.")
+        self.chat_msg = obs.get("chat_messages", ())
+        self.env_description = obs["environment_description"]
+        self.goal_object = obs.get("goal_object", [])
+        self.admissible_commands = obs.get("admissible_commands", "")
+        self.last_action = obs.get("last_action", {})
+        self.last_action_error = obs.get("last_action_error", {})
+        self.elapsed_time = obs.get("elapsed_time", 0)
 
     @property
     def _prompt(self) -> str:
-        prompt = "# Observation:\n"
+        prompt = "# Observation of current step:\n"
 
-        if self.flags.include_scene_description:
-            prompt += f"Scene Description: {self.scene_description}\n\n"
-
-        if self.flags.include_pddl_state:
-            prompt += f"PDDL State:\n{self.pddl_state}\n\n"
-
-        if self.flags.include_high_level_plan:
-            prompt += "High-Level Plan:\n"
-            for step in self.high_level_plan:
-                action = step.get("discrete_action", {}).get("action", "No action")
-                args = step.get("discrete_action", {}).get("args", [])
-                prompt += f"  - Action: {action}, Args: {args}\n"
+        prompt += f"Goal object: {self.goal_object["text"]}\n\n"
+        prompt += f"Environment: {self.env_description}\n\n"
+        prompt += f"Admissible commands: {self.admissible_commands}\n"
+        prompt += f"Last action: {self.last_action}\n"
 
         return prompt
 
@@ -123,8 +115,20 @@ class BeCautious(dp.PromptElement):
     def __init__(self, visible: bool = True) -> None:
         super().__init__(visible=visible)
         self._prompt = f"""\
-\nBe very cautious. Avoid submitting anything before verifying the effect of your
-actions. Take the time to explore the effect of safe actions first. \n"""  # TODO: 提示词有待进一步完善，比如：For example...，给agent举例子；
+\nBe very cautious. Avoid submitting any action before verifying its potential effect. 
+Take time to explore safe actions and analyze the environment thoroughly. 
+
+Guidelines:
+1. Verify the preconditions of your action. Ensure all necessary objects and conditions are in place.
+2. Anticipate the consequences of your action. Consider how it impacts the overall task progress.
+3. Avoid repeating past mistakes. Review your action history and any errors before deciding.
+4. If unsure, favor exploratory actions to gather more information.
+5. Always check the state of the environment after performing an action to ensure it aligns with your expectations.
+
+Example:
+- If you plan to pick up an object, ensure it is reachable and not obstructed.
+- Before opening a container, verify that it is not locked.
+\n"""  
 
 
 # TODO: 这个GoalInstructions还没有改，因为基本和alfworld中需要的差不多。但还可以润色改进
@@ -135,10 +139,9 @@ class GoalInstructions(dp.PromptElement):
             dict(
                 type="text",
                 text=f"""\
-# Instructions
-Review the current state of the page and all other information to find the best
-possible next action to accomplish your goal. Your answer will be interpreted
-and executed by a program, make sure to follow the formatting instructions.
+# Goal Instructions
+Review the current environment state and provided information to determine the best possible next action.
+Your response will be executed by a program, so ensure it adheres to the required formatting.
 
 ## Goal:
 """,
@@ -169,11 +172,7 @@ class ChatInstructions(dp.PromptElement):
         pass
 
 
-# TODO: prompt设计待完成，针对alfworld的hints
 class Hints(dp.PromptElement):
-    """Not super useful and stale."""
-
-    # NOTE: are these hints still relevant?
     _prompt = """\
 Note:
 * Carefully analyze the current environment and observe any clues in the scene description.
@@ -396,40 +395,9 @@ class History(dp.Shrinkable):
 
 def make_obs_preprocessor(flags: ObsFlags):
     def preprocess_obs(obs: dict) -> dict:
-        """
-        Process a raw observation dictionary to extract relevant information.
-
-        Args:
-            obs (dict): Raw observation data.
-
-        Returns:
-            dict: Processed observation data, enriched with structured information.
-        """
         processed_obs = obs.copy()
-
-        # Include scene description if specified
-        if flags.include_scene_description:
-            processed_obs["scene_description"] = obs.get(
-                "turk_annotations", {}
-            ).get("anns", [{}])[0].get("task_desc", "No scene description provided.")
-
-        # Include PDDL state if specified
-        if flags.include_pddl_state:
-            processed_obs["pddl_state"] = obs.get("pddl_params", {})
-
-        # Include high-level plan if specified
-        if flags.include_high_level_plan:
-            high_pddl = obs.get("plan", {}).get("high_pddl", [])
-            processed_obs["high_level_plan"] = [
-                {
-                    "action": step.get("discrete_action", {}).get("action", "Unknown"),
-                    "args": step.get("discrete_action", {}).get("args", [])
-                }
-                for step in high_pddl
-            ]
-
+        # 这里好像没什么需要处理的
         return processed_obs
-
     return preprocess_obs
 
 
