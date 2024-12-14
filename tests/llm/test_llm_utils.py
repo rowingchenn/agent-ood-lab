@@ -231,12 +231,14 @@ Another block of code:
 ```javascript
 console.log("Hello, world!");
 ```
+An inline code block ```click()```
 """
 
     expected_output = [
         ("python", 'def hello_world():\n    print("Hello, world!")'),
         ("", "More code without a language."),
         ("javascript", 'console.log("Hello, world!");'),
+        ("", "click()"),
     ]
 
     assert llm_utils.extract_code_blocks(text) == expected_output
@@ -249,8 +251,7 @@ def test_message_merge_only_text():
     ]
     message = llm_utils.BaseMessage(role="system", content=content)
     message.merge()
-    assert len(message["content"]) == 1
-    assert message["content"][0]["text"] == "Hello, world!\nThis is a test."
+    assert message["content"] == "Hello, world!\nThis is a test."
 
 
 def test_message_merge_text_image():

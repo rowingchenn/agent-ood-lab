@@ -8,8 +8,7 @@ import re
 import time
 from copy import deepcopy
 from functools import cache
-from typing import TYPE_CHECKING
-from typing import Any, Union
+from typing import TYPE_CHECKING, Any, Union
 from warnings import warn
 
 import numpy as np
@@ -64,20 +63,15 @@ def retry(
         messages (list): the list of messages so far. This list will be modified with
             the new messages and the retry messages.
         n_retry (int): the maximum number of sequential retries.
-        parser (function): a function taking a message and retruning a parsed value,
+        parser (callable): a function taking a message and retruning a parsed value,
             or raising a ParseError
         log (bool): whether to log the retry messages.
-        min_retry_wait_time (float): the minimum wait time in seconds
-            after RateLimtError. will try to parse the wait time from the error
-            message.
-        rate_limit_max_wait_time (int): the maximum wait time in seconds
 
     Returns:
         dict: the parsed value, with a string at key "action".
 
     Raises:
-        RetryError: if the parser could not parse a valid value after n_retry retries.
-        RateLimitError: if the requests exceed the rate limit.
+        ParseError: if the parser could not parse the response after n_retry retries.
     """
     tries = 0
     while tries < n_retry:
@@ -92,6 +86,69 @@ def retry(
                 msg = f"Query failed. Retrying {tries}/{n_retry}.\n[LLM]:\n{answer['content']}\n[User]:\n{str(parsing_error)}"
                 logging.info(msg)
             messages.append(dict(role="user", content=str(parsing_error)))
+
+    raise ParseError(f"Could not parse a valid value after {n_retry} retries.")
+
+
+def retry_multiple(
+    chat: "ChatModel",
+    messages: "Discussion",
+    n_retry: int,
+    parser: callable,
+    log: bool = True,
+    num_samples: int = 1,
+):
+    """Retry querying the chat models with the response from the parser until it
+    returns a valid value.
+
+    If the answer is not valid, it will retry and append to the chat the  retry
+    message.  It will stop after `n_retry`.
+
+    Note, each retry has to resend the whole prompt to the API. This can be slow
+    and expensive.
+
+    Args:
+        chat (ChatModel): a ChatModel object taking a list of messages and
+            returning a list of answers, all in OpenAI format.
+        messages (list): the list of messages so far. This list will be modified with
+            the new messages and the retry messages.
+        n_retry (int): the maximum number of sequential retries.
+        parser (callable): a function taking a message and retruning a parsed value,
+            or raising a ParseError
+        log (bool): whether to log the retry messages.
+        num_samples (int): the number of samples to generate from the model.
+
+    Returns:
+        list[dict]: the parsed value, with a string at key "action".
+
+    Raises:
+        ParseError: if the parser could not parse the response after n_retry retries.
+    """
+    tries = 0
+    while tries < n_retry:
+        answer_list = chat(messages, n_samples=num_samples)
+        # TODO: could we change this to not use inplace modifications ?
+        if not isinstance(answer_list, list):
+            answer_list = [answer_list]
+
+        # TODO taking the 1st hides the other generated answers in AgentXRay
+        messages.append(answer_list[0])
+        parsed_answers = []
+        errors = []
+        for answer in answer_list:
+            try:
+                parsed_answers.append(parser(answer["content"]))
+            except ParseError as parsing_error:
+                errors.append(str(parsing_error))
+        # if we have a valid answer, return it
+        if parsed_answers:
+            return parsed_answers, tries
+        else:
+            tries += 1
+            if log:
+                msg = f"Query failed. Retrying {tries}/{n_retry}.\n[LLM]:\n{answer['content']}\n[User]:\n{str(errors)}"
+                logging.info(msg)
+            messages.append(dict(role="user", content=str(errors)))
 
     raise ParseError(f"Could not parse a valid value after {n_retry} retries.")
 
@@ -248,10 +305,10 @@ class ParseError(Exception):
 
 
 def extract_code_blocks(text) -> list[tuple[str, str]]:
-    pattern = re.compile(r"```(\w*)\n(.*?)```", re.DOTALL)
+    pattern = re.compile(r"```(\w*\n)?(.*?)```", re.DOTALL)
 
     matches = pattern.findall(text)
-    return [(match[0], match[1].strip()) for match in matches]
+    return [(match[0].strip(), match[1].strip()) for match in matches]
 
 
 def parse_html_tags_raise(text, keys=(), optional_keys=(), merge_multiple=False):
@@ -329,13 +386,16 @@ class BaseMessage(dict):
         self["role"] = role
         self["content"] = deepcopy(content)
 
-    def __str__(self) -> str:
+    def __str__(self, warn_if_image=False) -> str:
         if isinstance(self["content"], str):
             return self["content"]
         if not all(elem["type"] == "text" for elem in self["content"]):
-            logging.warning(
-                "The content of the message has images, which are not displayed in the string representation."
-            )
+            msg = "The content of the message has images, which are not displayed in the string representation."
+            if warn_if_image:
+                logging.warning(msg)
+            else:
+                logging.info(msg)
+
         return "\n".join([elem["text"] for elem in self["content"] if elem["type"] == "text"])
 
     def add_content(self, type: str, content: Any):
@@ -356,7 +416,7 @@ class BaseMessage(dict):
         if detail:
             self.add_content("image_url", {"url": image_url, "detail": detail})
         else:
-            self.add_content("image_url", image_url)
+            self.add_content("image_url", {"url": image_url})
 
     def to_markdown(self):
         if isinstance(self["content"], str):
@@ -389,6 +449,8 @@ class BaseMessage(dict):
             else:
                 new_content.append(elem)
         self["content"] = new_content
+        if len(self["content"]) == 1:
+            self["content"] = self["content"][0]["text"]
 
 
 class SystemMessage(BaseMessage):
