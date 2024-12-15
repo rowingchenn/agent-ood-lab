@@ -2,9 +2,13 @@ from agentlab.agents.embodied_agent.alfworld_agent_prompt import AlfworldPromptF
 from agentlab.agents.embodied_agent.alfworld_agent_prompt import AlfworldPrompt
 from agentlab.agents.embodied_agent.alfworld_agent import AlfworldAgentArgs
 from agentlab.agents.embodied_agent import alfworld_dynamic_prompting as adp
+from agentlab.llm.llm_configs import CHAT_MODEL_ARGS_DICT
 
-from embodiedgym.experiments.loop import EnvArgs, ExpArgs
+# from embodiedgym.experiments.loop import EnvArgs, ExpArgs
 import logging
+
+# TODO: import error in loop.py          
+from embodiedgym.experiments.loop import ExpArgs, AlfworldEnvArgs
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +18,9 @@ FLAG_TEST = AlfworldPromptFlags(
     use_plan=False,
     use_criticise=False,
     use_thinking=True,
-    use_memory=False,
+    # use_memory=False,
     use_concrete_example=True,
-    use_abstract_example=True,
+    # use_abstract_example=True,
     use_hints=True,
     enable_chat=False,
     max_prompt_tokens=128000,  # The context of Qwen2.5-7B-Instruct is 128K tokens
@@ -24,13 +28,17 @@ FLAG_TEST = AlfworldPromptFlags(
     extra_instructions=None,
 )
 
-AGENT_TEST = AlfworldAgentArgs()
+AGENT_TEST = AlfworldAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
+    flags=FLAG_TEST,
+    max_retry=2
+)
 
 
 def main():
-    exp_dir = "./test_ID/"
+    exp_dir = "./test_embodied_id_results/"
 
-    env_args = EnvArgs(
+    env_args = AlfworldEnvArgs(
         # task_name="webarena.692",
         # task_name="workarena.servicenow.infeasible-navigate-and-order-apple-mac-book-pro15-l2",  # L2 is multi-tab
         task_name="workarena.servicenow.workload-balancing-small-l2",
