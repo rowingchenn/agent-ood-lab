@@ -46,7 +46,8 @@ FLAG_TEST = AlfworldPromptFlags(
 )
 
 AGENT_TEST = AlfworldAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["local/Llama-3-8B-Instruct-sft-alfworld"],
+    # chat_model_args=CHAT_MODEL_ARGS_DICT["local/Llama-3-8B-Instruct-sft-alfworld"],
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o"],
     flags=FLAG_TEST,
     max_retry=3,
 )
@@ -57,8 +58,8 @@ def main():
     exp_dir = "./test_embodied_id_results/"
 
     env_args = AlfworldEnvArgs(
-        task_name="workarena.servicenow.workload-balancing-small-l2",
-        max_steps=15,
+        task_name="json_2.1.1/valid_unseen/pick_and_place_simple-Pencil-None-Shelf-308/trial_T20190908_121952_610012/game.tw-pddl",
+        max_step=15,
         wait_for_user_message=False,
         terminate_on_infeasible=True,
     )

@@ -520,7 +520,7 @@ is not within reach or already in my inventory.
 
 
 def fit_tokens(
-    shrinkable: Shrinkable,
+    shrinkable: dp.Shrinkable,
     max_prompt_tokens=None,
     max_iterations=20,
     model_name="openai/gpt-4",
