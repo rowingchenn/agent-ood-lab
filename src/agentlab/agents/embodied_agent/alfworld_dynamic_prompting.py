@@ -90,6 +90,7 @@ class Observation(dp.PromptElement):
     def _prompt(self) -> str:
         prompt = "# Observation of current step:\n"
         prompt += self.env_description
+        prompt += "\n\n"
         return prompt
 
     def shrink(self):
@@ -236,6 +237,7 @@ class Think(dp.PromptElement):
 # Think:
 Consider the current state of the environment and formulate a step-by-step reasoning process.
 Explain why this step is necessary and how it contributes to the overall goal.
+Remember to put all the thinking in <think></think> tags! 
 """
 
     _abstract_ex = """

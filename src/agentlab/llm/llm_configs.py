@@ -69,6 +69,12 @@ CHAT_MODEL_ARGS_DICT = {
         max_input_tokens=16_384,
         max_new_tokens=4096,
     ),
+    "claude-3-5-sonnet-20241022": OpenAIModelArgs(  # since we use same third party api, so we only need to change name for claude
+        model_name_or_path="claude-3-5-sonnet-20241022",
+        max_total_tokens=128_000,
+        max_input_tokens=128_000,
+        max_new_tokens=16_384,
+    ),
     "azure/gpt-35-turbo/gpt-35-turbo": AzureModelArgs(
         model_name_or_path="gpt-35-turbo",
         deployment_name="gpt-35-turbo",

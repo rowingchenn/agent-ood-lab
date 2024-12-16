@@ -63,7 +63,8 @@ FLAG_TEST = AlfworldPromptFlags(
 
 AGENT_TEST = AlfworldAgentArgs(
     # chat_model_args=CHAT_MODEL_ARGS_DICT["local/Llama-3-8B-Instruct-sft-alfworld"],
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o"],
+    # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o"],
+    chat_model_args=CHAT_MODEL_ARGS_DICT["claude-3-5-sonnet-20241022"],
     flags=FLAG_TEST,
     max_retry=3,
 )
