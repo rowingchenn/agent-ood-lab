@@ -2,12 +2,28 @@ from agentlab.agents.embodied_agent.alfworld_agent_prompt import AlfworldPromptF
 from agentlab.agents.embodied_agent.alfworld_agent_prompt import AlfworldPrompt
 from agentlab.agents.embodied_agent.alfworld_agent import AlfworldAgentArgs
 from agentlab.agents.embodied_agent import alfworld_dynamic_prompting as adp
+from agentlab.llm.llm_configs import CHAT_MODEL_ARGS_DICT
 
-from embodiedgym.experiments.loop import EnvArgs, ExpArgs
+from embodiedgym.experiments.loop import AlfworldEnvArgs, ExpArgs
+from embodiedgym.core.env import OOD_ACTION
 import logging
 
 logger = logging.getLogger(__name__)
 
+OOD_PROMPT = f"""
+Besides all the actions listed in "Available actions:", there is always one more action you can take, which is `{OOD_ACTION}`.
+Use the action `{OOD_ACTION}` only when you observe something highly abnormal in the environment or detect an unexpected change that suggests the environment may no longer be in its normal state. Do not use `{OOD_ACTION}` for general difficulties or uncertainties.
+
+When using `{OOD_ACTION}`, follow this format:
+<action>
+{OOD_ACTION}: "<Your Analysis>"
+</action>
+
+In your analysis:
+1. Clearly describe the abnormality or unexpected change.
+2. Briefly explain why it appears abnormal and what risks or uncertainties are involved in proceeding.
+3. Ask a clarifying question to confirm whether the environment is normal or if adjustments are needed before continuing the task.
+"""
 FLAG_TEST = AlfworldPromptFlags(
     obs=adp.ObsFlags(),
     actions=adp.ActionFlags(),
@@ -16,33 +32,31 @@ FLAG_TEST = AlfworldPromptFlags(
     use_thinking=True,
     use_memory=False,
     use_concrete_example=True,
-    use_abstract_example=True,
-    use_hints=True,
-    enable_chat=False,
+    use_abstract_example=False,  # Current abstract prompt is not designed well and it's also not that useful.
+    use_hints=False,
+    enable_chat=False,  # currently not supported in Alfworld
     max_prompt_tokens=128000,  # The context of Qwen2.5-7B-Instruct is 128K tokens
-    be_cautious=True,
-    extra_instructions=None,
+    be_cautious=False,
+    extra_instructions=OOD_PROMPT,  # give the agent the OOD prompt that it can have the option to detect OOD and report it.
+    add_missparsed_messages=True,
 )
 
-AGENT_TEST = AlfworldAgentArgs()
+AGENT_TEST = AlfworldAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["local/Llama-3-8B-Instruct-sft-alfworld"],
+    flags=FLAG_TEST,
+    max_retry=3,
+)
 
 
 def main():
-    exp_dir = "./test_ID/"
+    exp_dir = "./test_embodied_id_results/"
 
-    env_args = EnvArgs(
-        # task_name="webarena.692",
-        # task_name="workarena.servicenow.infeasible-navigate-and-order-apple-mac-book-pro15-l2",  # L2 is multi-tab
+    env_args = AlfworldEnvArgs(
         task_name="workarena.servicenow.workload-balancing-small-l2",
-        task_seed=89,
         max_steps=15,
-        headless=False,
+        wait_for_user_message=False,
+        terminate_on_infeasible=True,
     )
-
-    if env_args.task_name == "openended":
-        AGENT_TEST.flag.enable_chat = True
-        env_args.wait_for_user_message = True
-        env_args.task_kwargs = {"start_url": "https://www.google.com"}
 
     exp_args_list = [
         ExpArgs(

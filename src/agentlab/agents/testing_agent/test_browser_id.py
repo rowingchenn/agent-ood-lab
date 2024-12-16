@@ -69,11 +69,11 @@ AGENT_TEST = GenericAgentArgs(
 def main():
     exp_dir = "./test_browser_id_results/"
 
-    env_args = bgym.EnvArgs(
+    env_args = EnvArgs(
         # task_name="webarena.692",
         # task_name="workarena.servicenow.infeasible-navigate-and-order-apple-mac-book-pro15-l2",  # L2 is multi-tab
         # task_name="workarena.servicenow.workload-balancing-small-l2",
-        task_name="openended",
+        task_name="",
         task_seed=89,
         max_steps=15,
         headless=False,
@@ -86,7 +86,7 @@ def main():
         env_args.task_kwargs = {"start_url": "https://www.google.com"}
 
     exp_args_list = [
-        bgym.ExpArgs(
+        ExpArgs(
             agent_args=AGENT_TEST,
             env_args=env_args,
             logging_level=logging.INFO,

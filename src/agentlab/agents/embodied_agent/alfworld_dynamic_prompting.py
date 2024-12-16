@@ -11,6 +11,7 @@ from warnings import warn
 import bgym
 from browsergym.core.action.base import AbstractActionSet
 from browsergym.utils.obs import flatten_axtree_to_str, flatten_dom_to_str, overlay_som, prune_html
+from embodiedgym.core.env import OOD_ACTION
 
 from agentlab.agents import dynamic_prompting as dp
 from agentlab.llm.llm_utils import (
@@ -77,38 +78,25 @@ class Error(dp.PromptElement):
         self._prompt = f"\n{prefix}Error from previous action:\n{error}\n"
 
 
-# TODO: 应该为TextWorld返回的文字
+# TODO: 应该为每一步TextWorld返回的文字中，对环境描述的信息。
 class Observation(dp.PromptElement):
-    """Observation of the current step.
-    """
+    """Observation of the current step."""
 
     def __init__(self, obs, flags: ObsFlags) -> None:
         super().__init__()
         self.flags = flags
         self.obs = obs
-
-        self.chat_msg = obs.get("chat_messages", ())
         self.env_description = obs["environment_description"]
-        self.goal_object = obs.get("goal_object", [])
-        self.admissible_commands = obs.get("admissible_commands", "")
-        self.last_action = obs.get("last_action", {})
-        self.last_action_error = obs.get("last_action_error", {})
-        self.elapsed_time = obs.get("elapsed_time", 0)
 
     @property
     def _prompt(self) -> str:
         prompt = "# Observation of current step:\n"
-
-        prompt += f"Goal object: {self.goal_object["text"]}\n\n"
-        prompt += f"Environment: {self.env_description}\n\n"
-        prompt += f"Admissible commands: {self.admissible_commands}\n"
-        prompt += f"Last action: {self.last_action}\n"
+        prompt += self.env_description
 
         return prompt
 
     def shrink(self):
         pass
-
 
 
 class BeCautious(dp.PromptElement):
@@ -128,7 +116,7 @@ Guidelines:
 Example:
 - If you plan to pick up an object, ensure it is reachable and not obstructed.
 - Before opening a container, verify that it is not locked.
-\n"""  
+\n"""
 
 
 # TODO: 这个GoalInstructions还没有改，因为基本和alfworld中需要的差不多。但还可以润色改进
@@ -141,6 +129,7 @@ class GoalInstructions(dp.PromptElement):
                 text=f"""\
 # Goal Instructions
 Review the current environment state and provided information to determine the best possible next action.
+I will give you a set of admissible actions you can take. Remember you can only take one action at a time. And only use actions listed after ''.
 Your response will be executed by a program, so ensure it adheres to the required formatting.
 
 ## Goal:
@@ -197,15 +186,27 @@ Your goal is to complete the task efficiently and accurately while reasoning abo
 
 class ActionPrompt(dp.PromptElement):
 
-    def __init__(self, info, action_flags) -> None:
+    def __init__(self, obs, action_flags) -> None:
         super().__init__()
-        self.info = info
+        self.obs = obs
         self.action_flags = action_flags
-        self.actions = self.info.get(info.get("admissible_commands", [[]])[0])
-        self.actions = "\n".join(self.actions)
-        self._prompt = "Available actions:\n" + self.actions + "\n"
-        self._concrete_ex = """"""
-        self._abstract_ex = f""""""
+        action_set_generic_info = """\
+Note: This action set allows you to interact with your environment. 
+You must select only one action from the set and output it within <action></action> tags. 
+Ensure your output includes no additional text or formatting outside the tags.\n
+"""
+        self.actions = self.obs.get("admissible_commands")
+        self._prompt = f"# Admissible actions:\n{action_set_generic_info}\n{self.actions}\n"
+        self._concrete_ex = """
+<action>
+go to cabinet 1
+</action>
+"""
+        self._abstract_ex = f"""
+<action>
+Any action from the admissible actions. Or the extra action mentioned before.
+</action>
+"""
 
     def bleu_score(reference, candidate):
         reference_tokens = reference.split()
@@ -216,32 +217,41 @@ class ActionPrompt(dp.PromptElement):
         return score
 
     def _parse_answer(self, action, choices=None):
-        """ """
+        """
+        action: str, the action to be parsed
+        choices: list[str], the admissible actions provided by the environment
+        """
         if not choices:
             return action
 
         try:
-            action = parse_html_tags_raise(action, keys=["action"], merge_multiple=True)
+            ans_dict = parse_html_tags_raise(action, keys=["action"], merge_multiple=True)
+            action = ans_dict["action"]
         except ParseError as e:
-            raise e
+            if self.action_flags.is_strict:
+                raise e
+            else:
+                pass  # 暂时未实现，也就是如果输出了<action>xxx[/action]这样的标签，且is_strict为False，我们应该怎么处理
 
-        if self.action_flags.is_strict:
-            if action in choices:
-                return action
+        bleus = [self.bleu_score(choice, action) for choice in choices]
+
+        # 计算OOD_ACTION和action的BLEU分数，并也加入到bleus中
+        ood_bleu_score = self.bleu_score(OOD_ACTION, action)
+        bleus.append(ood_bleu_score)
+        max_index = np.argmax(np.array(bleus))
+        max_score = bleus[max_index]
+        if max_score > self.action_flags.blue_limit:
+            if max_index < len(choices):
+                ans_dict["action"] = choices[max_index]
             else:
-                raise ParseError(
-                    f"Action {action} is not in the admissible actions. Make sure your answer is restricted to the allowed actions."
-                )
+                ans_dict["action"] = OOD_ACTION
         else:
-            bleus = [self.bleu_score(choice, action) for choice in choices]
-            max_index = np.argmax(np.array(bleus))
-            max_score = bleus[max_index]
-            if max_score > self.action_flags.blue_limit:
-                return choices[max_index]
-            else:
-                raise ParseError(
-                    f"Action is not close enough to the admissible actions. The limit is set to {self.action_flags.blue_limit}."
-                )
+            raise ParseError(
+                f"Error while parsing action\n: {e}\n"
+                "Make sure your answer is restricted to the admissible actions listed for you."
+            )
+
+        return ans_dict
 
 
 # TODO: prompt设计待完成，针对alfworld的thinking
@@ -262,9 +272,12 @@ Think step by step. For example:
 """
     _concrete_ex = """
 <think>
-1. The alarm clock is on the dresser. I need to pick it up first.
-2. After that, I should locate the lamp and turn it on.
-3. This sequence ensures that I complete the goal of examining the alarm clock in proper lighting.
+The task is to put some spraybottle on the toilet. To achieve this, 
+I first need to locate a spraybottle within the room. 
+Searching for the spraybottle is a critical first step because without it, the primary goal cannot be accomplished. 
+By systematically exploring the room, I can identify its exact location and retrieve it. 
+This step contributes to the overall goal by ensuring that I have the necessary item in hand before proceeding to the next actions, 
+such as moving to the toilet and placing the spraybottle on it.
 </think>
 """
 
@@ -361,36 +374,36 @@ class History(dp.Shrinkable):
 
 
 # def make_obs_preprocessor(flags: ObsFlags):
-    # def obs_mapping(obs: dict):
-    #     obs = copy(obs)
-    #     obs["dom_txt"] = flatten_dom_to_str(
-    #         obs["dom_object"],
-    #         extra_properties=obs["extra_element_properties"],
-    #         with_visible=flags.extract_visible_tag,
-    #         with_clickable=flags.extract_clickable_tag,
-    #         with_center_coords=flags.extract_coords == "center",
-    #         with_bounding_box_coords=flags.extract_coords == "box",
-    #         filter_visible_only=flags.filter_visible_elements_only,
-    #         filter_with_bid_only=flags.filter_with_bid_only,
-    #         filter_som_only=flags.filter_som_only,
-    #     )
-    #     obs["axtree_txt"] = flatten_axtree_to_str(
-    #         obs["axtree_object"],
-    #         extra_properties=obs["extra_element_properties"],
-    #         with_visible=flags.extract_visible_tag,
-    #         with_clickable=flags.extract_clickable_tag,
-    #         with_center_coords=flags.extract_coords == "center",
-    #         with_bounding_box_coords=flags.extract_coords == "box",
-    #         filter_visible_only=flags.filter_visible_elements_only,
-    #         filter_with_bid_only=flags.filter_with_bid_only,
-    #         filter_som_only=flags.filter_som_only,
-    #     )
-    #     obs["pruned_html"] = prune_html(obs["dom_txt"])
-    #     obs["screenshot_som"] = overlay_som(
-    #         obs["screenshot"], extra_properties=obs["extra_element_properties"]
-    #     )
+# def obs_mapping(obs: dict):
+#     obs = copy(obs)
+#     obs["dom_txt"] = flatten_dom_to_str(
+#         obs["dom_object"],
+#         extra_properties=obs["extra_element_properties"],
+#         with_visible=flags.extract_visible_tag,
+#         with_clickable=flags.extract_clickable_tag,
+#         with_center_coords=flags.extract_coords == "center",
+#         with_bounding_box_coords=flags.extract_coords == "box",
+#         filter_visible_only=flags.filter_visible_elements_only,
+#         filter_with_bid_only=flags.filter_with_bid_only,
+#         filter_som_only=flags.filter_som_only,
+#     )
+#     obs["axtree_txt"] = flatten_axtree_to_str(
+#         obs["axtree_object"],
+#         extra_properties=obs["extra_element_properties"],
+#         with_visible=flags.extract_visible_tag,
+#         with_clickable=flags.extract_clickable_tag,
+#         with_center_coords=flags.extract_coords == "center",
+#         with_bounding_box_coords=flags.extract_coords == "box",
+#         filter_visible_only=flags.filter_visible_elements_only,
+#         filter_with_bid_only=flags.filter_with_bid_only,
+#         filter_som_only=flags.filter_som_only,
+#     )
+#     obs["pruned_html"] = prune_html(obs["dom_txt"])
+#     obs["screenshot_som"] = overlay_som(
+#         obs["screenshot"], extra_properties=obs["extra_element_properties"]
+#     )
 
-    #     return obs
+#     return obs
 
 
 def make_obs_preprocessor(flags: ObsFlags):
@@ -398,6 +411,7 @@ def make_obs_preprocessor(flags: ObsFlags):
         processed_obs = obs.copy()
         # 这里好像没什么需要处理的
         return processed_obs
+
     return preprocess_obs
 
 
@@ -503,3 +517,18 @@ is not within reach or already in my inventory.
 
     def _parse_answer(self, text_answer):
         return parse_html_tags_raise(text_answer, optional_keys=["action_draft", "criticise"])
+
+
+def fit_tokens(
+    shrinkable: Shrinkable,
+    max_prompt_tokens=None,
+    max_iterations=20,
+    model_name="openai/gpt-4",
+    additional_prompts=[""],
+):
+    """
+    Shrink a prompt element until it fits `max_prompt_tokens`.
+
+    Currently Alfworld is too simple to need this function.
+    """
+    pass

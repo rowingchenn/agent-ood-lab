@@ -1,10 +1,11 @@
-
 from dataclasses import asdict, dataclass
 import logging
 
 from browsergym.experiments.agent import Agent, AgentInfo
 from agentlab.agents.agent_args import AgentArgs
-from agentlab.agents.embodied_agent import alfworld_dynamic_prompting as dp
+
+# from agentlab.agents import dynamic_prompting as dp
+from agentlab.agents.embodied_agent import alfworld_dynamic_prompting as adp
 from agentlab.llm.chat_api import BaseModelArgs
 from agentlab.llm.tracking import cost_tracker_decorator
 from agentlab.llm.llm_utils import Discussion, ParseError, SystemMessage, retry
@@ -59,14 +60,16 @@ class AlfworldAgent(Agent):
         self.max_retry = max_retry
 
     def obs_preprocessor(self, obs):
-        return self._obs_preprocessor(obs)
+        # This is used to preprocess the observation for the agent
+        # In BrowserGym, here we need to preprocess all the html, axtree, dom, etc.
+        # But in EmbodiedGym, we currently do nothing here in Alfworld.
+        pass
 
     @cost_tracker_decorator
     def get_action(self, obs):
         self.obs_history.append(obs)
 
         main_prompt = AlfworldPrompt(
-            action_set=self.action_set,
             obs_history=self.obs_history,
             actions=self.actions,
             memories=self.memories,
@@ -78,9 +81,9 @@ class AlfworldAgent(Agent):
 
         max_prompt_tokens, max_trunc_itr = self._get_maxes()
 
-        system_prompt = SystemMessage(dp.SystemPrompt().prompt)
+        system_prompt = SystemMessage(adp.SystemPrompt().prompt)
 
-        human_prompt = dp.fit_tokens(
+        human_prompt = adp.fit_tokens(
             shrinkable=main_prompt,
             max_prompt_tokens=max_prompt_tokens,
             model_name=self.chat_model_args.model_name_or_path,
@@ -127,7 +130,6 @@ class AlfworldAgent(Agent):
         )
         return ans_dict["action"], agent_info
 
-
     def reset(self, seed=None):
         self.seed = seed
         self.plan = "No plan yet"
@@ -139,3 +141,18 @@ class AlfworldAgent(Agent):
 
     def run(self, info: AgentInfo):
         pass
+
+    def _get_maxes(self):
+        maxes = (
+            self.flags.max_prompt_tokens,
+            self.chat_model_args.max_total_tokens,
+            self.chat_model_args.max_input_tokens,
+        )
+        maxes = [m for m in maxes if m is not None]
+        max_prompt_tokens = min(maxes) if maxes else None
+        max_trunc_itr = (
+            self.flags.max_trunc_itr
+            if self.flags.max_trunc_itr
+            else 20  # dangerous to change the default value here?
+        )
+        return max_prompt_tokens, max_trunc_itr

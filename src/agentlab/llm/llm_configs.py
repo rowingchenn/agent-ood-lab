@@ -213,4 +213,14 @@ CHAT_MODEL_ARGS_DICT = {
         repetition_penalty=1.2,
         do_sample=True,
     ),
+    "local/Llama-3-8B-Instruct-sft-alfworld": LocalHuggingFaceModelArgs(
+        model_name_or_path="leap-llm/Meta-Llama-3-8B-Instruct-sft-alfworld-iter0z",
+        max_new_tokens=2048,
+        max_retry=4,
+        temperature=1e-1,
+        top_k=50,
+        top_p=0.9,
+        repetition_penalty=1.2,
+        do_sample=True,
+    ),
 }
