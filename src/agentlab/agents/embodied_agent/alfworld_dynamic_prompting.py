@@ -216,40 +216,19 @@ Any action from the admissible actions. Or the extra action mentioned before.
         score = sentence_bleu([reference_tokens], candidate_tokens, smoothing_function=smoothie)
         return score
 
-    def _parse_answer(self, action, choices=None):
+    def _parse_answer(self, action: str):
         """
         action: str, the action to be parsed
         choices: list[str], the admissible actions provided by the environment
         """
-        if not choices:
-            return action
 
         try:
             ans_dict = parse_html_tags_raise(action, keys=["action"], merge_multiple=True)
-            action = ans_dict["action"]
         except ParseError as e:
             if self.action_flags.is_strict:
                 raise e
             else:
                 pass  # 暂时未实现，也就是如果输出了<action>xxx[/action]这样的标签，且is_strict为False，我们应该怎么处理
-
-        bleus = [self.bleu_score(choice, action) for choice in choices]
-
-        # 计算OOD_ACTION和action的BLEU分数，并也加入到bleus中
-        ood_bleu_score = self.bleu_score(OOD_ACTION, action)
-        bleus.append(ood_bleu_score)
-        max_index = np.argmax(np.array(bleus))
-        max_score = bleus[max_index]
-        if max_score > self.action_flags.blue_limit:
-            if max_index < len(choices):
-                ans_dict["action"] = choices[max_index]
-            else:
-                ans_dict["action"] = OOD_ACTION
-        else:
-            raise ParseError(
-                f"Error while parsing action\n: {e}\n"
-                "Make sure your answer is restricted to the admissible actions listed for you."
-            )
 
         return ans_dict
 
@@ -531,4 +510,4 @@ def fit_tokens(
 
     Currently Alfworld is too simple to need this function.
     """
-    pass
+    return shrinkable.prompt

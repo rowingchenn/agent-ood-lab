@@ -59,6 +59,7 @@ class AlfworldAgent(Agent):
         self.chat_model_args = chat_model_args
         self.flags = flags
         self.max_retry = max_retry
+        self.reset(seed=None)
 
     def obs_preprocessor(self, obs):
         # This is used to preprocess the observation for the agent

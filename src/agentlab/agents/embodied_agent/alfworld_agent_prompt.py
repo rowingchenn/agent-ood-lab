@@ -41,6 +41,7 @@ class AlfworldPromptFlags(dp.Flags):
     be_cautious: bool = True
     extra_instructions: str | None = None
     add_missparsed_messages: bool = True
+    max_trunc_itr: int = 20
 
 
 # TODO: 设计alfworld的prompt
@@ -145,21 +146,6 @@ answer:
 {self.memory.abstract_ex}\
 {self.criticise.abstract_ex}\
 {self.action_prompt.abstract_ex}\
-"""
-            )
-
-        if self.flags.use_concrete_example:
-            prompt.add_text(
-                f"""
-# Concrete Example
-
-Here is a concrete example of how to format your answer.
-Make sure to follow the template with proper tags:
-{self.think.concrete_ex}\
-{self.plan.concrete_ex}\
-{self.memory.concrete_ex}\
-{self.criticise.concrete_ex}\
-{self.action_prompt.concrete_ex}\
 """
             )
 

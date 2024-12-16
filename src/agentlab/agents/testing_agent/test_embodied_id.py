@@ -6,13 +6,21 @@ from agentlab.llm.llm_configs import CHAT_MODEL_ARGS_DICT
 from agentlab.llm.llm_configs import CHAT_MODEL_ARGS_DICT
 
 from embodiedgym.experiments.loop import AlfworldEnvArgs, ExpArgs
-from embodiedgym.core.env import OOD_ACTION
-import logging
 
 # TODO: import error in loop.py
 from embodiedgym.experiments.loop import ExpArgs, AlfworldEnvArgs
+from embodiedgym.core.env import OOD_ACTION
+import logging
+import os
+
 
 logger = logging.getLogger(__name__)
+
+# 获取当前 Python 文件的目录路径
+current_directory = os.path.dirname(os.path.abspath(__file__))
+
+# 将工作目录更改为当前文件目录
+os.chdir(current_directory)
 
 OOD_PROMPT = f"""
 Besides all the actions listed in "Available actions:", there is always one more action you can take, which is `{OOD_ACTION}`.

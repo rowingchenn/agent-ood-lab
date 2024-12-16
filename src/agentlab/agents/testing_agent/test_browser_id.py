@@ -72,8 +72,8 @@ def main():
     env_args = EnvArgs(
         # task_name="webarena.692",
         # task_name="workarena.servicenow.infeasible-navigate-and-order-apple-mac-book-pro15-l2",  # L2 is multi-tab
-        # task_name="workarena.servicenow.workload-balancing-small-l2",
-        task_name="",
+        task_name="workarena.servicenow.workload-balancing-small-l2",
+        # task_name="",
         task_seed=89,
         max_steps=15,
         headless=False,
