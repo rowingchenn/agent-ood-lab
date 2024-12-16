@@ -3,10 +3,14 @@ from agentlab.agents.embodied_agent.alfworld_agent_prompt import AlfworldPrompt
 from agentlab.agents.embodied_agent.alfworld_agent import AlfworldAgentArgs
 from agentlab.agents.embodied_agent import alfworld_dynamic_prompting as adp
 from agentlab.llm.llm_configs import CHAT_MODEL_ARGS_DICT
+from agentlab.llm.llm_configs import CHAT_MODEL_ARGS_DICT
 
 from embodiedgym.experiments.loop import AlfworldEnvArgs, ExpArgs
 from embodiedgym.core.env import OOD_ACTION
 import logging
+
+# TODO: import error in loop.py
+from embodiedgym.experiments.loop import ExpArgs, AlfworldEnvArgs
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +34,7 @@ FLAG_TEST = AlfworldPromptFlags(
     use_plan=False,
     use_criticise=False,
     use_thinking=True,
-    use_memory=False,
+    # use_memory=False,
     use_concrete_example=True,
     use_abstract_example=False,  # Current abstract prompt is not designed well and it's also not that useful.
     use_hints=False,
@@ -49,6 +53,7 @@ AGENT_TEST = AlfworldAgentArgs(
 
 
 def main():
+    exp_dir = "./test_embodied_id_results/"
     exp_dir = "./test_embodied_id_results/"
 
     env_args = AlfworldEnvArgs(

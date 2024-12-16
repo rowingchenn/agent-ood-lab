@@ -11,7 +11,8 @@ from agentlab.llm.tracking import cost_tracker_decorator
 from agentlab.llm.llm_utils import Discussion, ParseError, SystemMessage, retry
 
 
-from .alfworld_agent_prompt import AlfworldPrompt, AlfworldPromptFlags
+# from .alfworld_agent_prompt import AlfworldPrompt, AlfworldPromptFlags
+from agentlab.agents.embodied_agent.alfworld_agent_prompt import AlfworldPrompt, AlfworldPromptFlags
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class AlfworldAgentArgs(AgentArgs):
     """
 
     chat_model_args: BaseModelArgs = None
-    flags: AlfworldPromptFlags
+    flags: AlfworldPromptFlags = None
     max_retry: int = 4
 
     def __post_init__(self):
