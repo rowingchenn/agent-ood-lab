@@ -97,7 +97,7 @@ class AlfworldAgent(Agent):
             # TODO, we would need to further shrink the prompt if the retry
             # cause it to be too long
             chat_messages = Discussion([system_prompt, human_prompt])
-            logger.info(f"FULL PROMPT:\n {chat_messages}")
+            logger.debug(f"FULL PROMPT:\n {chat_messages}")
             ans_dict = retry(
                 self.chat_llm,
                 chat_messages,
@@ -123,6 +123,8 @@ class AlfworldAgent(Agent):
         self.actions.append(ans_dict["action"])
         self.memories.append(ans_dict.get("memory", None))
         self.thoughts.append(ans_dict.get("think", None))
+        if ans_dict.get("think", None) is not None:
+            logger.info(f"Agent thought:\n {ans_dict.get('think', None)}")
 
         agent_info = AgentInfo(
             think=ans_dict.get("think", None),

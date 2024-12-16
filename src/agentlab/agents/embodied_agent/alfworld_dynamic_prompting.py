@@ -59,11 +59,9 @@ class ActionFlags(dp.Flags):
     """
     Attributes:
         is_strict (bool): If True, the agent must choose from the admissible actions.
-        blue_limit (float): When is_strict is False, the minimum BLEU score required to match the action to the admissible actions.
     """
 
     is_strict: bool = None
-    blue_limit: float = 0.8
 
 
 class Error(dp.PromptElement):
@@ -92,7 +90,6 @@ class Observation(dp.PromptElement):
     def _prompt(self) -> str:
         prompt = "# Observation of current step:\n"
         prompt += self.env_description
-
         return prompt
 
     def shrink(self):
@@ -193,7 +190,7 @@ class ActionPrompt(dp.PromptElement):
         action_set_generic_info = """\
 Note: This action set allows you to interact with your environment. 
 You must select only one action from the set and output it within <action></action> tags. 
-Ensure your output includes no additional text or formatting outside the tags.\n
+Ensure your output includes no additional text or formatting outside the tags.
 """
         self.actions = self.obs.get("admissible_commands")
         self._prompt = f"# Admissible actions:\n{action_set_generic_info}\n{self.actions}\n"
@@ -396,11 +393,11 @@ def make_obs_preprocessor(flags: ObsFlags):
 
 class Memory(dp.PromptElement):
     _prompt = """
-<memory>
-Write down anything you need to remember for the next steps. Use this space to note
-important details, observations, or actions that could guide your decision-making
-in future steps.
-</memory>
+# Memory:
+Write down any information you think might be useful, such as the location of observed items, 
+their status, and the important tasks you have already completed. And every memory should be based on the previous step.
+Add more information or modify the previous memory if necessary.
+Remember to put all the memory in <memory></memory> tags! 
 """
 
     _abstract_ex = """
@@ -413,8 +410,7 @@ remember hints from previous steps in order to solve it.
 
     _concrete_ex = """
 <memory>
-I picked up the alarm clock from the dresser. Next, I need to turn on the lamp
-to complete the task of examining the clock under proper lighting.
+I used to be in the kitchen, where I found a ... Then I went to the bedroom, where I found a ... And I have already picked up a ...
 </memory>
 """
 
