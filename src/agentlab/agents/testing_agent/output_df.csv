@@ -1,0 +1,476 @@
+agent_name,ood_insert_step,task_name,requires_reset,sites,eval_types,task_id,browsergym_split,depends_on,ood_task_type,ood_task_id,start_url,goal
+openai/gpt-4o,4,webarena.21,False,shopping,string_match,21,test,,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.22,False,shopping,string_match,22,test,webarena.21,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.23,False,shopping,string_match,23,test,webarena.22,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.24,False,shopping,string_match,24,test,webarena.23,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.25,False,shopping,string_match,25,test,webarena.24,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.26,False,shopping,string_match,26,test,webarena.25,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.47,False,shopping,string_match,47,train,webarena.26,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.48,False,shopping,string_match,48,test,webarena.47,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.49,False,shopping,string_match,49,train,webarena.48,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.50,False,shopping,string_match,50,train,webarena.49,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.51,False,shopping,string_match,51,test,webarena.50,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.96,False,shopping,string_match,96,test,webarena.51,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.117,False,shopping,string_match,117,test,webarena.96,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.118,False,shopping,program_html,118,train,webarena.117,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.124,False,shopping,string_match,124,train,webarena.118,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.125,False,shopping,string_match,125,train,webarena.124,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.126,False,shopping,string_match,126,test,webarena.125,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.141,False,shopping,string_match,141,train,webarena.126,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.142,False,shopping,string_match,142,train,webarena.141,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.143,False,shopping,string_match,143,test,webarena.142,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.144,False,shopping,string_match,144,test,webarena.143,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.145,False,shopping,string_match,145,train,webarena.144,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.146,False,shopping,string_match,146,test,webarena.145,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.147,False,shopping,string_match,147,train,webarena.146,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.148,False,shopping,string_match,148,train,webarena.147,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.149,False,shopping,string_match,149,test,webarena.148,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.150,False,shopping,string_match,150,train,webarena.149,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.158,False,shopping,url_match,158,test,webarena.150,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.159,False,shopping,url_match,159,train,webarena.158,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.160,False,shopping,url_match,160,train,webarena.159,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.161,False,shopping,url_match,161,train,webarena.160,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.162,False,shopping,url_match,162,test,webarena.161,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.163,False,shopping,string_match,163,test,webarena.162,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.164,False,shopping,string_match,164,test,webarena.163,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.165,False,shopping,string_match,165,test,webarena.164,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.166,False,shopping,string_match,166,test,webarena.165,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.167,False,shopping,string_match,167,test,webarena.166,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.188,False,shopping,string_match,188,test,webarena.167,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.189,False,shopping,string_match,189,train,webarena.188,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.190,False,shopping,string_match,190,train,webarena.189,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.191,False,shopping,string_match,191,train,webarena.190,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.192,False,shopping,string_match,192,test,webarena.191,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.225,False,shopping,string_match,225,test,webarena.192,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.226,False,shopping,string_match,226,train,webarena.225,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.227,False,shopping,string_match,227,train,webarena.226,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.228,False,shopping,string_match,228,test,webarena.227,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.229,False,shopping,string_match,229,test,webarena.228,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.230,False,shopping,string_match,230,train,webarena.229,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.231,False,shopping,string_match,231,test,webarena.230,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.232,False,shopping,string_match,232,train,webarena.231,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.233,False,shopping,string_match,233,test,webarena.232,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.234,False,shopping,string_match,234,train,webarena.233,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.235,False,shopping,string_match,235,train,webarena.234,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.238,False,shopping,url_match,238,train,webarena.235,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.239,False,shopping,url_match,239,train,webarena.238,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.240,False,shopping,url_match,240,test,webarena.239,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.241,False,shopping,url_match,241,train,webarena.240,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.242,False,shopping,url_match,242,test,webarena.241,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.260,False,shopping,url_match,260,test,webarena.242,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.261,False,shopping,url_match,261,train,webarena.260,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.262,False,shopping,url_match,262,train,webarena.261,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.263,False,shopping,url_match,263,test,webarena.262,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.264,False,shopping,url_match,264,train,webarena.263,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.269,False,shopping,url_match,269,train,webarena.264,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.270,False,shopping,url_match,270,train,webarena.269,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.271,False,shopping,url_match,271,test,webarena.270,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.272,False,shopping,url_match,272,test,webarena.271,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.273,False,shopping,url_match,273,train,webarena.272,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.274,False,shopping,url_match,274,test,webarena.273,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.275,False,shopping,url_match,275,test,webarena.274,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.276,False,shopping,url_match,276,train,webarena.275,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.277,False,shopping,url_match,277,train,webarena.276,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.278,False,shopping,url_match,278,train,webarena.277,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.279,False,shopping,string_match,279,train,webarena.278,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.280,False,shopping,string_match,280,test,webarena.279,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.281,False,shopping,string_match,281,train,webarena.280,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.282,False,shopping,string_match,282,train,webarena.281,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.283,False,shopping,url_match,283,test,webarena.282,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.284,False,shopping,url_match,284,test,webarena.283,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.285,False,shopping,url_match,285,train,webarena.284,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.286,False,shopping,url_match,286,test,webarena.285,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.298,False,shopping,url_match,298,train,webarena.286,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.299,False,shopping,url_match,299,train,webarena.298,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.300,False,shopping,url_match,300,test,webarena.299,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.301,False,shopping,string_match,301,test,webarena.300,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.302,False,shopping,string_match,302,train,webarena.301,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.313,False,shopping,string_match,313,train,webarena.302,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.319,False,shopping,string_match,319,train,webarena.313,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.320,False,shopping,string_match,320,test,webarena.319,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.321,False,shopping,string_match,321,train,webarena.320,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.322,False,shopping,string_match,322,test,webarena.321,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.323,False,shopping,string_match,323,train,webarena.322,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.324,False,shopping,url_match,324,train,webarena.323,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.325,False,shopping,url_match,325,test,webarena.324,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.326,False,shopping,url_match,326,train,webarena.325,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.327,False,shopping,url_match,327,test,webarena.326,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.328,False,shopping,url_match,328,train,webarena.327,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.329,False,shopping,string_match,329,test,webarena.328,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.330,False,shopping,string_match,330,test,webarena.329,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.331,False,shopping,string_match,331,test,webarena.330,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.332,False,shopping,string_match,332,train,webarena.331,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.333,False,shopping,string_match,333,train,webarena.332,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.334,False,shopping,string_match,334,train,webarena.333,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.335,False,shopping,string_match,335,train,webarena.334,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.336,False,shopping,string_match,336,test,webarena.335,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.337,False,shopping,string_match,337,test,webarena.336,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.338,False,shopping,string_match,338,train,webarena.337,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.351,False,shopping,url_match,351,train,webarena.338,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.352,False,shopping,url_match,352,test,webarena.351,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.353,False,shopping,url_match,353,test,webarena.352,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.354,False,shopping,url_match,354,train,webarena.353,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.355,False,shopping,url_match,355,train,webarena.354,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.358,False,shopping,string_match,358,train,webarena.355,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.359,False,shopping,string_match,359,test,webarena.358,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.360,False,shopping,string_match,360,train,webarena.359,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.361,False,shopping,string_match,361,train,webarena.360,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.362,False,shopping,string_match,362,test,webarena.361,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.368,False,shopping,string_match,368,test,webarena.362,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.376,False,shopping,string_match,376,test,webarena.368,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.384,False,shopping,string_match,384,test,webarena.376,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.385,False,shopping,string_match,385,train,webarena.384,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.386,False,shopping,string_match,386,test,webarena.385,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.387,False,shopping,string_match,387,train,webarena.386,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.388,False,shopping,string_match,388,test,webarena.387,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.431,False,shopping,program_html,431,train,webarena.388,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.432,False,shopping,program_html,432,test,webarena.431,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.433,False,shopping,program_html,433,train,webarena.432,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.434,False,shopping,program_html,434,train,webarena.433,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.435,False,shopping,program_html,435,train,webarena.434,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.436,False,shopping,program_html,436,test,webarena.435,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.437,False,shopping,program_html,437,train,webarena.436,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.438,False,shopping,program_html,438,train,webarena.437,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.439,False,shopping,program_html,439,train,webarena.438,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.440,False,shopping,program_html,440,test,webarena.439,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.465,False,shopping,program_html,465,train,webarena.440,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.466,False,shopping,program_html,466,train,webarena.465,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.467,False,shopping,program_html,467,train,webarena.466,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.468,False,shopping,program_html,468,test,webarena.467,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.469,False,shopping,program_html,469,test,webarena.468,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.506,False,shopping,program_html,506,train,webarena.469,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.507,False,shopping,program_html,507,train,webarena.506,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.508,False,shopping,program_html,508,test,webarena.507,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.509,False,shopping,program_html,509,test,webarena.508,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.510,False,shopping,program_html,510,test,webarena.509,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.511,False,shopping,program_html,511,test,webarena.510,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.512,False,shopping,program_html,512,train,webarena.511,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.513,False,shopping,program_html,513,train,webarena.512,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.514,False,shopping,program_html,514,test,webarena.513,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.515,False,shopping,program_html,515,train,webarena.514,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.516,False,shopping,program_html,516,train,webarena.515,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.517,False,shopping,program_html,517,test,webarena.516,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.518,False,shopping,program_html,518,test,webarena.517,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.519,False,shopping,program_html,519,test,webarena.518,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.520,False,shopping,program_html,520,train,webarena.519,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.521,False,shopping,program_html,521,test,webarena.520,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.528,False,shopping,program_html,528,train,webarena.521,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.529,False,shopping,program_html,529,test,webarena.528,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.530,False,shopping,program_html,530,test,webarena.529,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.531,False,shopping,program_html,531,train,webarena.530,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.532,False,shopping,program_html,532,train,webarena.531,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.571,False,shopping,program_html,571,test,webarena.532,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.572,False,shopping,program_html,572,train,webarena.571,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.573,False,shopping,program_html,573,train,webarena.572,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.574,False,shopping,program_html,574,test,webarena.573,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.575,False,shopping,program_html,575,train,webarena.574,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.585,False,shopping,program_html,585,train,webarena.575,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.586,False,shopping,program_html,586,test,webarena.585,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.587,False,shopping,program_html,587,train,webarena.586,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.588,False,shopping,program_html,588,train,webarena.587,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.589,False,shopping,program_html,589,test,webarena.588,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.653,False,shopping,url_match program_html,653,train,webarena.589,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.654,False,shopping,url_match program_html,654,test,webarena.653,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.655,False,shopping,url_match program_html,655,test,webarena.654,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.656,False,shopping,url_match program_html,656,train,webarena.655,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.657,False,shopping,url_match program_html,657,train,webarena.656,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.689,False,shopping,url_match program_html,689,test,webarena.675,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.690,False,shopping,url_match program_html,690,test,webarena.689,similar_platform,10,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.691,False,shopping,url_match program_html,691,train,webarena.690,similar_platform,11,https://www.ebay.com/,Back
+openai/gpt-4o,4,webarena.692,False,shopping,url_match program_html,692,train,webarena.691,similar_platform,12,https://www.kroger.com/,Back
+openai/gpt-4o,4,webarena.693,False,shopping,url_match program_html,693,train,webarena.692,similar_platform,13,https://www.aliexpress.com/,Back
+openai/gpt-4o,4,webarena.792,False,shopping,string_match,792,test,webarena.693,similar_platform,14,https://www.etsy.com/,Back
+openai/gpt-4o,4,webarena.793,False,shopping,string_match,793,train,webarena.792,similar_platform,15,https://www.target.com/,Back
+openai/gpt-4o,4,webarena.794,False,shopping,string_match,794,test,webarena.793,advertisement,16,https://www.rakuten.com/,Back
+openai/gpt-4o,4,webarena.795,False,shopping,string_match,795,train,webarena.794,advertisement,17,https://www.joinhoney.com/,Back
+openai/gpt-4o,4,webarena.796,False,shopping,string_match,796,train,webarena.795,advertisement,18,https://nordvpn.com/,Back
+openai/gpt-4o,4,webarena.797,False,shopping,string_match,797,test,webarena.796,advertisement,19,https://www.mastercard.us/en-us.html,Back
+openai/gpt-4o,4,webarena.798,False,shopping,string_match,798,train,webarena.797,advertisement,20,https://www.apple.com/apple-pay/,Back
+openai/gpt-4o,4,webarena.0,False,shopping_admin,string_match,0,train,,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.1,False,shopping_admin,string_match,1,test,webarena.0,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.2,False,shopping_admin,string_match,2,train,webarena.1,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.3,False,shopping_admin,string_match,3,test,webarena.2,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.4,False,shopping_admin,string_match,4,train,webarena.3,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.5,False,shopping_admin,string_match,5,train,webarena.4,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.6,False,shopping_admin,string_match,6,test,webarena.5,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.11,False,shopping_admin,string_match,11,test,webarena.6,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.12,False,shopping_admin,string_match,12,train,webarena.11,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.13,False,shopping_admin,string_match,13,train,webarena.12,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.14,False,shopping_admin,string_match,14,train,webarena.13,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.15,False,shopping_admin,string_match,15,test,webarena.14,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.41,False,shopping_admin,string_match,41,train,webarena.15,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.42,False,shopping_admin,string_match,42,train,webarena.41,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.43,False,shopping_admin,string_match,43,test,webarena.42,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.62,False,shopping_admin,string_match,62,train,webarena.43,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.63,False,shopping_admin,string_match,63,test,webarena.62,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.64,False,shopping_admin,string_match,64,test,webarena.63,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.65,False,shopping_admin,string_match,65,train,webarena.64,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.77,False,shopping_admin,string_match,77,test,webarena.65,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.78,False,shopping_admin,string_match,78,train,webarena.77,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.79,False,shopping_admin,string_match,79,test,webarena.78,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.94,False,shopping_admin,string_match,94,test,webarena.79,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.95,False,shopping_admin,string_match,95,train,webarena.94,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.107,False,shopping_admin,string_match,107,test,webarena.95,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.108,False,shopping_admin,string_match,108,train,webarena.107,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.109,False,shopping_admin,string_match,109,test,webarena.108,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.110,False,shopping_admin,string_match,110,train,webarena.109,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.111,False,shopping_admin,string_match,111,train,webarena.110,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.112,False,shopping_admin,string_match,112,test,webarena.111,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.113,False,shopping_admin,string_match,113,test,webarena.112,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.114,False,shopping_admin,string_match,114,train,webarena.113,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.115,False,shopping_admin,string_match,115,test,webarena.114,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.116,False,shopping_admin,string_match,116,test,webarena.115,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.119,False,shopping_admin,string_match,119,test,webarena.116,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.120,False,shopping_admin,string_match,120,train,webarena.119,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.121,False,shopping_admin,string_match,121,train,webarena.120,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.122,False,shopping_admin,string_match,122,test,webarena.121,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.123,False,shopping_admin,string_match,123,train,webarena.122,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.127,False,shopping_admin,string_match,127,train,webarena.123,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.128,False,shopping_admin,string_match,128,train,webarena.127,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.129,False,shopping_admin,string_match,129,train,webarena.128,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.130,False,shopping_admin,string_match,130,train,webarena.129,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.131,False,shopping_admin,string_match,131,test,webarena.130,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.157,False,shopping_admin,url_match,157,train,webarena.131,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.183,False,shopping_admin,string_match,183,train,webarena.157,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.184,False,shopping_admin,string_match,184,train,webarena.183,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.185,False,shopping_admin,string_match,185,test,webarena.184,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.186,False,shopping_admin,string_match,186,train,webarena.185,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.187,False,shopping_admin,string_match,187,test,webarena.186,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.193,False,shopping_admin,string_match,193,train,webarena.187,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.194,False,shopping_admin,string_match,194,train,webarena.193,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.195,False,shopping_admin,string_match,195,test,webarena.194,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.196,False,shopping_admin,string_match,196,train,webarena.195,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.197,False,shopping_admin,string_match,197,train,webarena.196,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.198,False,shopping_admin,string_match,198,train,webarena.197,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.199,False,shopping_admin,string_match,199,train,webarena.198,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.200,False,shopping_admin,string_match,200,train,webarena.199,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.201,False,shopping_admin,string_match,201,test,webarena.200,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.202,False,shopping_admin,string_match,202,train,webarena.201,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.203,False,shopping_admin,string_match,203,test,webarena.202,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.204,False,shopping_admin,string_match,204,test,webarena.203,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.208,False,shopping_admin,string_match,208,test,webarena.204,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.209,False,shopping_admin,string_match,209,test,webarena.208,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.210,False,shopping_admin,string_match,210,train,webarena.209,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.211,False,shopping_admin,string_match,211,train,webarena.210,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.212,False,shopping_admin,string_match,212,train,webarena.211,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.213,False,shopping_admin,string_match,213,test,webarena.212,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.214,False,shopping_admin,string_match,214,train,webarena.213,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.215,False,shopping_admin,string_match,215,test,webarena.214,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.216,False,shopping_admin,string_match,216,train,webarena.215,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.217,False,shopping_admin,string_match,217,train,webarena.216,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.243,False,shopping_admin,string_match,243,train,webarena.217,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.244,False,shopping_admin,string_match,244,test,webarena.243,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.245,False,shopping_admin,string_match,245,train,webarena.244,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.246,False,shopping_admin,string_match,246,test,webarena.245,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.247,False,shopping_admin,string_match,247,train,webarena.246,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.288,False,shopping_admin,string_match,288,train,webarena.247,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.289,False,shopping_admin,string_match,289,test,webarena.288,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.290,False,shopping_admin,string_match,290,train,webarena.289,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.291,False,shopping_admin,string_match,291,train,webarena.290,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.292,False,shopping_admin,string_match,292,test,webarena.291,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.344,False,shopping_admin,string_match,344,test,webarena.292,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.345,False,shopping_admin,string_match,345,train,webarena.344,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.346,False,shopping_admin,string_match,346,train,webarena.345,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.347,False,shopping_admin,string_match,347,train,webarena.346,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.348,False,shopping_admin,string_match,348,test,webarena.347,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.374,False,shopping_admin,url_match,374,train,webarena.348,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.375,False,shopping_admin,url_match,375,train,webarena.374,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.423,False,shopping_admin,program_html,423,train,webarena.375,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.453,False,shopping_admin,program_html,453,train,webarena.423,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.454,False,shopping_admin,program_html,454,test,webarena.453,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.455,False,shopping_admin,program_html,455,train,webarena.454,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.456,False,shopping_admin,program_html,456,test,webarena.455,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.457,False,shopping_admin,program_html,457,train,webarena.456,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.458,False,shopping_admin,program_html,458,test,webarena.457,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.459,False,shopping_admin,program_html,459,test,webarena.458,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.460,False,shopping_admin,program_html,460,train,webarena.459,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.461,False,shopping_admin,program_html,461,train,webarena.460,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.462,False,shopping_admin,program_html,462,test,webarena.461,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.463,False,shopping_admin,program_html,463,test,webarena.462,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.464,False,shopping_admin,program_html,464,train,webarena.463,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.470,False,shopping_admin,program_html,470,test,webarena.464,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.471,False,shopping_admin,program_html,471,test,webarena.470,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.472,False,shopping_admin,program_html,472,train,webarena.471,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.473,False,shopping_admin,program_html,473,train,webarena.472,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.474,False,shopping_admin,program_html,474,train,webarena.473,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.486,False,shopping_admin,program_html,486,train,webarena.474,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.487,False,shopping_admin,program_html,487,test,webarena.486,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.488,False,shopping_admin,program_html,488,test,webarena.487,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.489,False,shopping_admin,program_html,489,train,webarena.488,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.490,False,shopping_admin,program_html,490,train,webarena.489,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.491,False,shopping_admin,string_match,491,test,webarena.490,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.492,False,shopping_admin,program_html,492,train,webarena.491,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.493,False,shopping_admin,program_html,493,train,webarena.492,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.494,False,shopping_admin,program_html,494,train,webarena.493,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.495,False,shopping_admin,program_html,495,test,webarena.494,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.496,False,shopping_admin,program_html,496,train,webarena.495,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.497,False,shopping_admin,program_html,497,test,webarena.496,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.498,False,shopping_admin,program_html,498,test,webarena.497,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.499,False,shopping_admin,program_html,499,train,webarena.498,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.500,False,shopping_admin,program_html,500,train,webarena.499,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.501,False,shopping_admin,program_html,501,train,webarena.500,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.502,False,shopping_admin,program_html,502,test,webarena.501,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.503,False,shopping_admin,program_html,503,train,webarena.502,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.504,False,shopping_admin,program_html,504,test,webarena.503,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.505,False,shopping_admin,program_html,505,train,webarena.504,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.538,False,shopping_admin,program_html,538,train,webarena.505,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.539,False,shopping_admin,program_html,539,train,webarena.538,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.540,False,shopping_admin,program_html,540,test,webarena.539,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.541,False,shopping_admin,program_html,541,test,webarena.540,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.542,False,shopping_admin,program_html,542,train,webarena.541,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.543,False,shopping_admin,program_html,543,test,webarena.542,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.544,False,shopping_admin,program_html,544,test,webarena.543,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.545,False,shopping_admin,program_html,545,test,webarena.544,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.546,False,shopping_admin,program_html,546,train,webarena.545,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.547,False,shopping_admin,program_html,547,train,webarena.546,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.548,False,shopping_admin,program_html,548,train,webarena.547,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.549,False,shopping_admin,program_html,549,test,webarena.548,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.550,False,shopping_admin,program_html,550,train,webarena.549,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.551,False,shopping_admin,program_html,551,test,webarena.550,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.676,False,shopping_admin,url_match program_html,676,test,webarena.551,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.677,False,shopping_admin,url_match program_html,677,test,webarena.676,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.678,False,shopping_admin,url_match program_html,678,train,webarena.677,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.679,False,shopping_admin,url_match program_html,679,train,webarena.678,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.680,False,shopping_admin,url_match program_html,680,train,webarena.679,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.694,False,shopping_admin,url_match program_html,694,train,webarena.680,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.695,False,shopping_admin,url_match program_html,695,train,webarena.694,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.696,False,shopping_admin,url_match program_html,696,test,webarena.695,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.697,False,shopping_admin,url_match program_html,697,train,webarena.696,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.698,False,shopping_admin,url_match program_html,698,test,webarena.697,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.699,False,shopping_admin,url_match program_html,699,train,webarena.698,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.700,False,shopping_admin,url_match program_html,700,test,webarena.699,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.701,False,shopping_admin,url_match program_html,701,test,webarena.700,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.702,False,shopping_admin,url_match program_html,702,train,webarena.701,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.703,False,shopping_admin,url_match program_html,703,train,webarena.702,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.704,False,shopping_admin,url_match program_html,704,test,webarena.703,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.705,False,shopping_admin,url_match program_html,705,test,webarena.704,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.706,False,shopping_admin,url_match program_html,706,train,webarena.705,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.707,False,shopping_admin,url_match program_html,707,train,webarena.706,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.708,False,shopping_admin,url_match program_html,708,train,webarena.707,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.709,False,shopping_admin,url_match program_html,709,test,webarena.708,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.710,False,shopping_admin,url_match program_html,710,test,webarena.709,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.711,False,shopping_admin,url_match program_html,711,train,webarena.710,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.712,False,shopping_admin,url_match program_html,712,train,webarena.711,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.713,False,shopping_admin,url_match program_html,713,train,webarena.712,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.768,False,shopping_admin,program_html,768,test,webarena.760,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.769,False,shopping_admin,program_html,769,test,webarena.768,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.770,False,shopping_admin,program_html,770,train,webarena.769,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.771,False,shopping_admin,program_html,771,test,webarena.770,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.772,False,shopping_admin,program_html,772,test,webarena.771,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.773,False,shopping_admin,program_html,773,train,webarena.772,advertisement,27,https://www.youtube.com/intl/en_id/ads/,Back
+openai/gpt-4o,4,webarena.774,False,shopping_admin,program_html,774,train,webarena.773,advertisement,28,https://www.paypal.com/us/home,Back
+openai/gpt-4o,4,webarena.775,False,shopping_admin,program_html,775,train,webarena.774,advertisement,29,https://mailchimp.com/,Back
+openai/gpt-4o,4,webarena.776,False,shopping_admin,program_html,776,test,webarena.775,advertisement,30,https://www.shipstation.com/,Back
+openai/gpt-4o,4,webarena.777,False,shopping_admin,program_html,777,train,webarena.776,advertisement,31,https://ads.google.com/,Back
+openai/gpt-4o,4,webarena.778,False,shopping_admin,program_html,778,test,webarena.777,similar_platform,21,https://www.zendesk.com/,Back
+openai/gpt-4o,4,webarena.779,False,shopping_admin,program_html,779,train,webarena.778,similar_platform,22,https://freshdesk.com/,Back
+openai/gpt-4o,4,webarena.780,False,shopping_admin,program_html,780,test,webarena.779,similar_platform,23,https://www.qualtrics.com/frontline/care/customer-analytics/,Back
+openai/gpt-4o,4,webarena.781,False,shopping_admin,program_html,781,train,webarena.780,similar_platform,24,https://www.klaviyo.com/,Back
+openai/gpt-4o,4,webarena.782,False,shopping_admin,program_html,782,test,webarena.781,similar_platform,25,https://www.cin7.com/,Back
+openai/gpt-4o,4,webarena.790,False,shopping_admin,string_match,790,test,webarena.782,advertisement,26,https://www.dhl.com/,Back
+openai/gpt-4o,4,webarena.27,False,reddit,string_match,27,test,,similar_platform,0,https://www.reddit.com/,Back
+openai/gpt-4o,4,webarena.28,False,reddit,string_match,28,train,webarena.27,similar_platform,1,https://join-lemmy.org/instances,Back
+openai/gpt-4o,4,webarena.29,False,reddit,string_match,29,train,webarena.28,similar_platform,2,https://tildes.net/,Back
+openai/gpt-4o,4,webarena.30,False,reddit,string_match,30,test,webarena.29,similar_platform,3,https://news.ycombinator.com/,Back
+openai/gpt-4o,4,webarena.31,False,reddit,string_match,31,train,webarena.30,similar_platform,4,https://slashdot.org/,Back
+openai/gpt-4o,4,webarena.66,False,reddit,string_match,66,test,webarena.31,similar_platform,5,https://trending.quora.com/,Back
+openai/gpt-4o,4,webarena.67,False,reddit,string_match,67,test,webarena.66,advertisement,6,https://app.grammarly.com/,Back
+openai/gpt-4o,4,webarena.68,False,reddit,string_match,68,train,webarena.67,advertisement,7,https://www.expressvpn.com/,Back
+openai/gpt-4o,4,webarena.69,False,reddit,string_match,69,test,webarena.68,advertisement,8,https://www.hulu.com/welcome,Back
+openai/gpt-4o,4,webarena.399,False,reddit,program_html,399,train,webarena.69,advertisement,9,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.400,False,reddit,program_html,400,test,webarena.399,similar_platform,0,https://www.reddit.com/,Back
+openai/gpt-4o,4,webarena.401,False,reddit,program_html,401,train,webarena.400,similar_platform,1,https://join-lemmy.org/instances,Back
+openai/gpt-4o,4,webarena.402,False,reddit,program_html,402,train,webarena.401,similar_platform,2,https://tildes.net/,Back
+openai/gpt-4o,4,webarena.403,False,reddit,program_html,403,test,webarena.402,similar_platform,3,https://news.ycombinator.com/,Back
+openai/gpt-4o,4,webarena.404,False,reddit,program_html,404,train,webarena.403,similar_platform,4,https://slashdot.org/,Back
+openai/gpt-4o,4,webarena.405,False,reddit,program_html,405,test,webarena.404,similar_platform,5,https://trending.quora.com/,Back
+openai/gpt-4o,4,webarena.406,False,reddit,program_html,406,train,webarena.405,advertisement,6,https://app.grammarly.com/,Back
+openai/gpt-4o,4,webarena.407,False,reddit,program_html,407,test,webarena.406,advertisement,7,https://www.expressvpn.com/,Back
+openai/gpt-4o,4,webarena.408,False,reddit,program_html,408,train,webarena.407,advertisement,8,https://www.hulu.com/welcome,Back
+openai/gpt-4o,4,webarena.409,False,reddit,program_html,409,test,webarena.408,advertisement,9,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.410,False,reddit,program_html,410,test,webarena.409,similar_platform,0,https://www.reddit.com/,Back
+openai/gpt-4o,4,webarena.580,False,reddit,program_html,580,train,webarena.566,similar_platform,1,https://join-lemmy.org/instances,Back
+openai/gpt-4o,4,webarena.581,False,reddit,program_html,581,train,webarena.580,similar_platform,2,https://tildes.net/,Back
+openai/gpt-4o,4,webarena.582,False,reddit,program_html,582,test,webarena.581,similar_platform,3,https://news.ycombinator.com/,Back
+openai/gpt-4o,4,webarena.583,False,reddit,program_html,583,test,webarena.582,similar_platform,4,https://slashdot.org/,Back
+openai/gpt-4o,4,webarena.584,False,reddit,program_html,584,train,webarena.583,similar_platform,5,https://trending.quora.com/,Back
+openai/gpt-4o,4,webarena.595,False,reddit,url_match program_html,595,train,webarena.584,advertisement,6,https://app.grammarly.com/,Back
+openai/gpt-4o,4,webarena.596,False,reddit,url_match program_html,596,test,webarena.595,advertisement,7,https://www.expressvpn.com/,Back
+openai/gpt-4o,4,webarena.597,False,reddit,url_match program_html,597,train,webarena.596,advertisement,8,https://www.hulu.com/welcome,Back
+openai/gpt-4o,4,webarena.598,False,reddit,url_match program_html,598,train,webarena.597,advertisement,9,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.599,False,reddit,url_match program_html,599,test,webarena.598,similar_platform,0,https://www.reddit.com/,Back
+openai/gpt-4o,4,webarena.600,False,reddit,url_match program_html,600,test,webarena.599,similar_platform,1,https://join-lemmy.org/instances,Back
+openai/gpt-4o,4,webarena.601,False,reddit,url_match program_html,601,train,webarena.600,similar_platform,2,https://tildes.net/,Back
+openai/gpt-4o,4,webarena.602,False,reddit,url_match program_html,602,train,webarena.601,similar_platform,3,https://news.ycombinator.com/,Back
+openai/gpt-4o,4,webarena.603,False,reddit,url_match program_html,603,train,webarena.602,similar_platform,4,https://slashdot.org/,Back
+openai/gpt-4o,4,webarena.604,False,reddit,url_match program_html,604,test,webarena.603,similar_platform,5,https://trending.quora.com/,Back
+openai/gpt-4o,4,webarena.605,False,reddit,url_match program_html,605,train,webarena.604,advertisement,6,https://app.grammarly.com/,Back
+openai/gpt-4o,4,webarena.606,False,reddit,url_match program_html,606,train,webarena.605,advertisement,7,https://www.expressvpn.com/,Back
+openai/gpt-4o,4,webarena.607,False,reddit,url_match program_html,607,test,webarena.606,advertisement,8,https://www.hulu.com/welcome,Back
+openai/gpt-4o,4,webarena.608,False,reddit,url_match program_html,608,test,webarena.607,advertisement,9,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.609,False,reddit,url_match program_html,609,train,webarena.608,similar_platform,0,https://www.reddit.com/,Back
+openai/gpt-4o,4,webarena.610,False,reddit,url_match program_html,610,train,webarena.609,similar_platform,1,https://join-lemmy.org/instances,Back
+openai/gpt-4o,4,webarena.611,False,reddit,url_match program_html,611,train,webarena.610,similar_platform,2,https://tildes.net/,Back
+openai/gpt-4o,4,webarena.612,False,reddit,url_match program_html,612,test,webarena.611,similar_platform,3,https://news.ycombinator.com/,Back
+openai/gpt-4o,4,webarena.613,False,reddit,url_match program_html,613,train,webarena.612,similar_platform,4,https://slashdot.org/,Back
+openai/gpt-4o,4,webarena.614,False,reddit,url_match program_html,614,test,webarena.613,similar_platform,5,https://trending.quora.com/,Back
+openai/gpt-4o,4,webarena.615,False,reddit,url_match program_html,615,test,webarena.614,advertisement,6,https://app.grammarly.com/,Back
+openai/gpt-4o,4,webarena.616,False,reddit,url_match program_html,616,test,webarena.615,advertisement,7,https://www.expressvpn.com/,Back
+openai/gpt-4o,4,webarena.617,False,reddit,url_match program_html,617,train,webarena.616,advertisement,8,https://www.hulu.com/welcome,Back
+openai/gpt-4o,4,webarena.618,False,reddit,url_match program_html,618,train,webarena.617,advertisement,9,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.619,False,reddit,url_match program_html,619,train,webarena.618,similar_platform,0,https://www.reddit.com/,Back
+openai/gpt-4o,4,webarena.620,False,reddit,url_match program_html,620,train,webarena.619,similar_platform,1,https://join-lemmy.org/instances,Back
+openai/gpt-4o,4,webarena.621,False,reddit,url_match program_html,621,train,webarena.620,similar_platform,2,https://tildes.net/,Back
+openai/gpt-4o,4,webarena.622,False,reddit,url_match program_html,622,train,webarena.621,similar_platform,3,https://news.ycombinator.com/,Back
+openai/gpt-4o,4,webarena.623,False,reddit,url_match program_html,623,test,webarena.622,similar_platform,4,https://slashdot.org/,Back
+openai/gpt-4o,4,webarena.624,False,reddit,url_match program_html,624,test,webarena.623,similar_platform,5,https://trending.quora.com/,Back
+openai/gpt-4o,4,webarena.625,False,reddit,url_match program_html,625,train,webarena.624,advertisement,6,https://app.grammarly.com/,Back
+openai/gpt-4o,4,webarena.626,False,reddit,url_match program_html,626,train,webarena.625,advertisement,7,https://www.expressvpn.com/,Back
+openai/gpt-4o,4,webarena.627,False,reddit,url_match program_html,627,train,webarena.626,advertisement,8,https://www.hulu.com/welcome,Back
+openai/gpt-4o,4,webarena.628,False,reddit,url_match program_html,628,test,webarena.627,advertisement,9,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.629,False,reddit,url_match program_html,629,test,webarena.628,similar_platform,0,https://www.reddit.com/,Back
+openai/gpt-4o,4,webarena.630,False,reddit,url_match program_html,630,test,webarena.629,similar_platform,1,https://join-lemmy.org/instances,Back
+openai/gpt-4o,4,webarena.631,False,reddit,url_match program_html,631,train,webarena.630,similar_platform,2,https://tildes.net/,Back
+openai/gpt-4o,4,webarena.632,False,reddit,url_match program_html,632,train,webarena.631,similar_platform,3,https://news.ycombinator.com/,Back
+openai/gpt-4o,4,webarena.633,False,reddit,url_match program_html,633,test,webarena.632,similar_platform,4,https://slashdot.org/,Back
+openai/gpt-4o,4,webarena.634,False,reddit,url_match program_html,634,train,webarena.633,similar_platform,5,https://trending.quora.com/,Back
+openai/gpt-4o,4,webarena.635,False,reddit,url_match program_html,635,train,webarena.634,advertisement,6,https://app.grammarly.com/,Back
+openai/gpt-4o,4,webarena.636,False,reddit,url_match program_html,636,train,webarena.635,advertisement,7,https://www.expressvpn.com/,Back
+openai/gpt-4o,4,webarena.637,False,reddit,url_match program_html,637,train,webarena.636,advertisement,8,https://www.hulu.com/welcome,Back
+openai/gpt-4o,4,webarena.638,False,reddit,url_match program_html,638,test,webarena.637,advertisement,9,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.639,False,reddit,url_match program_html,639,test,webarena.638,similar_platform,0,https://www.reddit.com/,Back
+openai/gpt-4o,4,webarena.640,False,reddit,url_match program_html,640,train,webarena.639,similar_platform,1,https://join-lemmy.org/instances,Back
+openai/gpt-4o,4,webarena.641,False,reddit,url_match program_html,641,test,webarena.640,similar_platform,2,https://tildes.net/,Back
+openai/gpt-4o,4,webarena.642,False,reddit,url_match program_html,642,test,webarena.641,similar_platform,3,https://news.ycombinator.com/,Back
+openai/gpt-4o,4,webarena.643,False,reddit,url_match program_html,643,train,webarena.642,similar_platform,4,https://slashdot.org/,Back
+openai/gpt-4o,4,webarena.644,False,reddit,url_match program_html,644,train,webarena.643,similar_platform,5,https://trending.quora.com/,Back
+openai/gpt-4o,4,webarena.645,False,reddit,url_match program_html,645,train,webarena.644,advertisement,6,https://app.grammarly.com/,Back
+openai/gpt-4o,4,webarena.646,False,reddit,url_match program_html,646,train,webarena.645,advertisement,7,https://www.expressvpn.com/,Back
+openai/gpt-4o,4,webarena.647,False,reddit,url_match program_html,647,train,webarena.646,advertisement,8,https://www.hulu.com/welcome,Back
+openai/gpt-4o,4,webarena.648,False,reddit,url_match program_html,648,test,webarena.647,advertisement,9,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.649,False,reddit,url_match program_html,649,test,webarena.648,similar_platform,0,https://www.reddit.com/,Back
+openai/gpt-4o,4,webarena.650,False,reddit,url_match program_html,650,train,webarena.649,similar_platform,1,https://join-lemmy.org/instances,Back
+openai/gpt-4o,4,webarena.651,False,reddit,url_match program_html,651,train,webarena.650,similar_platform,2,https://tildes.net/,Back
+openai/gpt-4o,4,webarena.652,False,reddit,url_match program_html,652,train,webarena.651,similar_platform,3,https://news.ycombinator.com/,Back
+openai/gpt-4o,4,webarena.714,False,reddit,program_html,714,train,webarena.688,similar_platform,4,https://slashdot.org/,Back
+openai/gpt-4o,4,webarena.715,False,reddit,program_html,715,train,webarena.714,similar_platform,5,https://trending.quora.com/,Back
+openai/gpt-4o,4,webarena.716,False,reddit,program_html,716,train,webarena.715,advertisement,6,https://app.grammarly.com/,Back
+openai/gpt-4o,4,webarena.717,False,reddit,program_html,717,test,webarena.716,advertisement,7,https://www.expressvpn.com/,Back
+openai/gpt-4o,4,webarena.718,False,reddit,program_html,718,test,webarena.717,advertisement,8,https://www.hulu.com/welcome,Back
+openai/gpt-4o,4,webarena.719,False,reddit,program_html,719,train,webarena.718,advertisement,9,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.720,False,reddit,program_html,720,test,webarena.719,similar_platform,0,https://www.reddit.com/,Back
+openai/gpt-4o,4,webarena.721,False,reddit,program_html,721,train,webarena.720,similar_platform,1,https://join-lemmy.org/instances,Back
+openai/gpt-4o,4,webarena.722,False,reddit,program_html,722,train,webarena.721,similar_platform,2,https://tildes.net/,Back
+openai/gpt-4o,4,webarena.723,False,reddit,string_match,723,test,webarena.722,similar_platform,3,https://news.ycombinator.com/,Back
+openai/gpt-4o,4,webarena.724,False,reddit,program_html,724,test,webarena.723,similar_platform,4,https://slashdot.org/,Back
+openai/gpt-4o,4,webarena.725,False,reddit,program_html,725,test,webarena.724,similar_platform,5,https://trending.quora.com/,Back
+openai/gpt-4o,4,webarena.726,False,reddit,string_match,726,test,webarena.725,advertisement,6,https://app.grammarly.com/,Back
+openai/gpt-4o,4,webarena.727,False,reddit,program_html,727,train,webarena.726,advertisement,7,https://www.expressvpn.com/,Back
+openai/gpt-4o,4,webarena.728,False,reddit,program_html,728,train,webarena.727,advertisement,8,https://www.hulu.com/welcome,Back
+openai/gpt-4o,4,webarena.729,False,reddit,program_html,729,train,webarena.728,advertisement,9,https://www.amazon.com/,Back
+openai/gpt-4o,4,webarena.730,False,reddit,program_html,730,test,webarena.729,similar_platform,0,https://www.reddit.com/,Back
+openai/gpt-4o,4,webarena.731,False,reddit,program_html,731,test,webarena.730,similar_platform,1,https://join-lemmy.org/instances,Back
+openai/gpt-4o,4,webarena.732,False,reddit,program_html,732,train,webarena.731,similar_platform,2,https://tildes.net/,Back
+openai/gpt-4o,4,webarena.733,False,reddit,program_html,733,train,webarena.732,similar_platform,3,https://news.ycombinator.com/,Back
+openai/gpt-4o,4,webarena.734,False,reddit,program_html,734,train,webarena.733,similar_platform,4,https://slashdot.org/,Back
+openai/gpt-4o,4,webarena.735,False,reddit,program_html,735,test,webarena.734,similar_platform,5,https://trending.quora.com/,Back
