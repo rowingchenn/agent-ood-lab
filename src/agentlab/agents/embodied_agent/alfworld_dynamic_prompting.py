@@ -190,8 +190,8 @@ class ActionPrompt(dp.PromptElement):
         self.action_flags = action_flags
         action_set_generic_info = """\
 Note: This action set allows you to interact with your environment. 
-You must select only one action from the set and output it within <action></action> tags. 
-Ensure your output includes no additional text or formatting outside the tags.
+You must select ONLY ONE action from the following list. 
+Remember to put the action in <action></action> tags!
 """
         self.actions = self.obs.get("admissible_commands")
         self._prompt = f"# Admissible actions:\n{action_set_generic_info}\n{self.actions}\n"
@@ -236,7 +236,7 @@ class Think(dp.PromptElement):
     _prompt = """
 # Think:
 Consider the current state of the environment and formulate a step-by-step reasoning process.
-Explain why this step is necessary and how it contributes to the overall goal.
+Explain why this step is necessary and how it contributes to the overall goal. Be short and concise.
 Remember to put all the thinking in <think></think> tags! 
 """
 
@@ -399,7 +399,7 @@ class Memory(dp.PromptElement):
 Write down any information you think might be useful, such as the location of observed items, 
 their status, and the important tasks you have already completed. And every memory should be based on the previous step.
 Add more information or modify the previous memory if necessary.
-Remember to put all the memory in <memory></memory> tags! 
+Remember to put all the memory in <memory></memory> tags! Be concise and short.
 """
 
     _abstract_ex = """

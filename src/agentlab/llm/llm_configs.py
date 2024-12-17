@@ -221,12 +221,21 @@ CHAT_MODEL_ARGS_DICT = {
     ),
     "local/Llama-3-8B-Instruct-sft-alfworld": LocalHuggingFaceModelArgs(
         model_name_or_path="leap-llm/Meta-Llama-3-8B-Instruct-sft-alfworld-iter0",
-        max_new_tokens=2048,
+        max_new_tokens=4096,
         max_retry=4,
         temperature=1e-1,
         top_k=50,
         top_p=0.9,
         repetition_penalty=1.2,
         do_sample=True,
+    ),
+    "local/Meta-Llama-3-8B-Instruct": LocalHuggingFaceModelArgs(
+        model_name_or_path="meta-llama/Meta-Llama-3-8B-Instruct",
+        max_new_tokens=2048,
+        max_retry=4,
+        temperature=1e-1,
+        top_k=50,
+        top_p=0.9,
+        repetition_penalty=1.2,
     ),
 }
