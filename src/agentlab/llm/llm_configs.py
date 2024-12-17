@@ -231,7 +231,7 @@ CHAT_MODEL_ARGS_DICT = {
     ),
     "local/Meta-Llama-3-8B-Instruct": LocalHuggingFaceModelArgs(
         model_name_or_path="meta-llama/Meta-Llama-3-8B-Instruct",
-        max_new_tokens=2048,
+        max_new_tokens=4096,
         max_retry=4,
         temperature=1e-1,
         top_k=50,

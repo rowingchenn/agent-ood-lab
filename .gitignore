@@ -174,4 +174,6 @@ src/agentlab/agents/testing_agent/test_browser_id_results
 src/agentlab/agents/testing_agent/test_browser_ood_results
 src/agentlab/agents/testing_agent/test_embodied_id_results
 src/agentlab/agents/testing_agent/test_embodied_ood_results
+benchmark_results
+src/agentlab/agents/testing_agent/claude
 src/agentlab/agents/testing_agent/inspect.ipynb 

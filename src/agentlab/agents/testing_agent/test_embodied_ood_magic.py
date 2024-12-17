@@ -3,16 +3,15 @@ from agentlab.agents.embodied_agent.alfworld_agent_prompt import AlfworldPrompt
 from agentlab.agents.embodied_agent.alfworld_agent import AlfworldAgentArgs
 from agentlab.agents.embodied_agent import alfworld_dynamic_prompting as adp
 from agentlab.llm.llm_configs import CHAT_MODEL_ARGS_DICT
-from agentlab.llm.llm_configs import CHAT_MODEL_ARGS_DICT
 
 from embodiedgym.experiments.loop import AlfworldEnvArgs, ExpArgs
-
-# TODO: import error in loop.py
-from embodiedgym.experiments.loop import ExpArgs, AlfworldEnvArgs
 from embodiedgym.core.env import OOD_ACTION
 import logging
 import os
 import json
+
+# 导入 tqdm 以显示进度条
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +35,7 @@ In your analysis:
 2. Briefly explain why it appears abnormal and what risks or uncertainties are involved in proceeding.
 3. Ask a clarifying question to confirm whether the environment is normal or if adjustments are needed before continuing the task.
 """
+
 FLAG_TEST = AlfworldPromptFlags(
     obs=adp.ObsFlags(
         use_error_logs=False,
@@ -62,60 +62,78 @@ FLAG_TEST = AlfworldPromptFlags(
 )
 
 AGENT_TEST = AlfworldAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["local/Meta-Llama-3-8B-Instruct"],
+    # chat_model_args=CHAT_MODEL_ARGS_DICT["local/Meta-Llama-3-8B-Instruct"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
-    # chat_model_args=CHAT_MODEL_ARGS_DICT["claude-3-5-sonnet-20241022"],
+    chat_model_args=CHAT_MODEL_ARGS_DICT["claude-3-5-sonnet-20241022"],
     flags=FLAG_TEST,
     max_retry=3,
 )
 
 
 def main():
-    exp_dir = "./test_embodied_ood_results/"
-    ood_file_dir = "/home/weichenzhang/LLMAgentOODGym/agent_ood_gym/embodiedgym/core/src/embodiedgym/core/configs/ood_first_step.json"
+    # JSON文件路径
+    ood_file_dir = "/home/weichenzhang/LLMAgentOODGym/agent_ood_gym/embodiedgym/core/src/embodiedgym/core/configs/ood_semantic_first_step.json"
 
     # 打开并读取 JSON 文件
     with open(ood_file_dir, "r", encoding="utf-8") as file:
         data = json.load(file)
 
-        # 获取第一个元素
-        first_ood_args = data[1]
+    # 获取文件名（不包括路径和扩展名）用于生成结果文件夹名称
+    json_filename = os.path.splitext(os.path.basename(ood_file_dir))[0]
 
-    # 打印第一个元素
-    print(first_ood_args)
+    # 创建总体保存的大文件夹名称
+    exp_dir = f"./claude/embodied_ood_results_{json_filename}_magic/"
+    os.makedirs(exp_dir, exist_ok=True)
 
-    env_args = AlfworldEnvArgs(
-        # task_name="json_2.1.1/valid_unseen/pick_and_place_simple-Pencil-None-Shelf-308/trial_T20190908_121952_610012/game.tw-pddl",
-        task_name="json_2.1.1/valid_unseen/pick_and_place_simple-PepperShaker-None-Drawer-10/trial_T20190918_154424_844749/game.tw-pddl",
-        max_step=35,
-        wait_for_user_message=False,
-        terminate_on_infeasible=True,
-    )
+    # 使用 tqdm 包装数据以显示进度条
+    for sample in tqdm(data, desc="处理进度", unit="任务"):
+        task_id = sample["task_id"]
+        task_name = sample["task_name"]
 
-    exp_args_list = [
-        ExpArgs(
+        if task_id <38:
+            continue
+
+        # 创建每个样本的单独文件夹
+        sample_dir = os.path.join(exp_dir, f"task_{task_id}")
+        os.makedirs(sample_dir, exist_ok=True)
+
+        logger.info(f"开始处理任务ID: {task_id}, 任务名称: {task_name}")
+
+        env_args = AlfworldEnvArgs(
+            task_name=task_name,  # 动态设置task_name
+            max_step=35,
+            wait_for_user_message=False,
+            terminate_on_infeasible=True,
+        )
+
+        exp_args = ExpArgs(
             agent_args=AGENT_TEST,
             env_args=env_args,
             logging_level=logging.INFO,
-            ood_args=first_ood_args,
-        ),
-    ]
+            ood_args=sample,  # 使用当前样本的OOD参数
+        )
 
-    for exp_args in exp_args_list:
+        # 设置结果保存路径
+        exp_args.prepare(exp_root=sample_dir)
+
+        logging.info(f"准备运行任务ID: {task_id}")
         exp_args.agent_args.prepare()
-        exp_args.prepare(exp_root=exp_dir)
-        logging.info(f"Ready to run {exp_args}.")
-        exp_args.run()
-        logging.info("All jobs are finished. Calling agent_args.close() on all agents...")
-        exp_args.agent_args.close()
-        logging.info("Experiment finished.")
-        # TODO: add ood result information to ExpResult
-        # loading and printing results
-        # exp_result = get_exp_result(exp_args.exp_dir)
-        # exp_record = exp_result.get_exp_record()
-        # for key, val in exp_record.items():
-        #     print(f"{key}: {val}")
+
+        try:
+            exp_args.run()
+            logging.info(f"任务ID: {task_id} 运行完成。")
+        except Exception as e:
+            logging.error(f"任务ID: {task_id} 运行时出错: {e}")
+        finally:
+            exp_args.agent_args.close()
+            logging.info(f"任务ID: {task_id} 实验结束。")
+            # TODO: 添加 OOD 结果信息到 ExpResult
+            # 例如，可以加载和打印结果，保存到文件等
+            # exp_result = get_exp_result(exp_args.exp_dir)
+            # exp_record = exp_result.get_exp_record()
+            # for key, val in exp_record.items():
+            #     print(f"{key}: {val}")
 
 
 if __name__ == "__main__":
