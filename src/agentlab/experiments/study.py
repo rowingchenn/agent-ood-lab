@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-
+import pandas as pd
 import bgym
 from bgym import Benchmark, EnvArgs, ExpArgs
 from slugify import slugify
@@ -339,7 +339,7 @@ class Study(AbstractStudy):
 
         if self.exp_args_list is None:
             raise ValueError("exp_args_list is None. Please set exp_args_list before running.")
-
+        # print(f"self.exp_args_list: {self.exp_args_list}")
         logger.info("Preparing backends...")
         self.benchmark.prepare_backends()
         logger.info("Backends ready.")
@@ -564,15 +564,52 @@ def _agents_on_benchmark(
 
     exp_args_list = []
 
+    # Get the path to the current script (study.py)
+    current_path = Path(__file__).resolve()
+    # Navigate to the root folder of the project (up 3 levels)
+    project_root = current_path.parents[3]
+    # Create a relative path for the CSV file
+    csv_path = project_root / "df_run.csv"
+    # current_path = "/Users/wangqian/Desktop/LLMAgentOODGym/agent_ood_lab/src/agentlab/experiments/study.py"
+    # csv_path = "/Users/wangqian/Desktop/LLMAgentOODGym/agent_ood_lab/df_no_run.csv"
+    df = pd.read_csv(csv_path)
     for agent in agents:
-        for env_args in env_args_list:
+        for _, eachRow in df.iterrows():
+            
+            ood_args = {
+                "ood_task_type": eachRow["ood_task_type"],
+                "ood_task_id": eachRow["ood_task_id"],
+                "ood_insert_step": eachRow["ood_insert_step"],
+                "ood_max_steps": 5,
+            }
+
+            # Define environment arguments
+            env_args = EnvArgs(
+                task_name=eachRow["task_name"],
+                task_seed=89,
+                max_steps=15,
+                headless=False,
+                timeout=30000,
+            )
+
+            # Set up experiment arguments
             exp_args = ExpArgs(
                 agent_args=agent,
                 env_args=env_args,
-                logging_level=logging_level,
-                logging_level_stdout=logging_level_stdout,
+                logging_level=logging.DEBUG,
+                ood_args=ood_args,
             )
             exp_args_list.append(exp_args)
+
+    # for agent in agents:
+    #     for env_args in env_args_list:
+    #         exp_args = ExpArgs(
+    #             agent_args=agent,
+    #             env_args=env_args,
+    #             logging_level=logging_level,
+    #             logging_level_stdout=logging_level_stdout,
+    #         )
+    #         exp_args_list.append(exp_args)
 
     for i, exp_args in enumerate(exp_args_list):
         exp_args.order = i

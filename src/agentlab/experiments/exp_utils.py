@@ -121,10 +121,15 @@ def add_dependencies(exp_args_list: list[ExpArgs], task_dependencies: dict[str, 
             raise ValueError(f"Task {task_name} is missing from task_dependencies")
 
     # turn dependencies from task names to exp_ids
+
+    print(exp_args_map)
     for task_name, exp_args in exp_args_map.items():
+        print(task_name)
         exp_args.depends_on = tuple(
-            exp_args_map[dep_name].exp_id for dep_name in task_dependencies[task_name]
+            exp_args_map[dep_name].exp_id for dep_name in task_dependencies[task_name] if dep_name in exp_args_map
         )
+
+    
 
     return exp_args_list
 
