@@ -28,7 +28,7 @@ def execute_task_graph(exp_args_list: list[bgym.ExpArgs], avg_step_timeout=60):
             dependency_tasks = [get_task(exp_args_map[dep_key]) for dep_key in exp_arg.depends_on]
 
             # Create new task that depends on the dependency results
-            task_map[exp_arg.exp_id] = run_exp.remote(
+            task_map[exp_arg.exp_id] = run_exp.options(name=f"{exp_arg.exp_name}").remote(
                 exp_arg, *dependency_tasks, avg_step_timeout=avg_step_timeout
             )
         return task_map[exp_arg.exp_id]
@@ -47,6 +47,17 @@ def poll_for_timeout(tasks: dict[str, ray.ObjectRef], timeout: float, poll_inter
 
     I tried various different methods for killing a job that hangs. so far it's
     the only one that seems to work reliably (hopefully)
+
+    Args:
+        tasks: dict[str, ray.ObjectRef]
+            Dictionary of task_id: task_ref
+        timeout: float
+            Timeout in seconds
+        poll_interval: float
+            Polling interval in seconds
+
+    Returns:
+        dict[str, Any]: Dictionary of task_id: result
     """
     task_list = list(tasks.values())
     task_ids = list(tasks.keys())

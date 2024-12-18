@@ -57,8 +57,8 @@ FLAGS_TEST = GenericPromptFlags(
 )
 
 AGENT_TEST = GenericAgentArgs(
-    # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-2024-05-13"],
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
+    # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-2024-05-13"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4-1106-preview"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["local/Qwen2.5-7B-Instruct"],
     flags=FLAGS_TEST,
@@ -67,19 +67,21 @@ AGENT_TEST = GenericAgentArgs(
 
 
 def main():
-    exp_dir = "./test_ID/"
+    exp_dir = "./test_browser_id_results/"
 
     env_args = bgym.EnvArgs(
         # task_name="webarena.692",
         # task_name="workarena.servicenow.infeasible-navigate-and-order-apple-mac-book-pro15-l2",  # L2 is multi-tab
-        task_name="workarena.servicenow.workload-balancing-small-l2",
+        # task_name="workarena.servicenow.workload-balancing-small-l2",
+        task_name="openended",
         task_seed=89,
         max_steps=15,
         headless=False,
+        timeout=15000,
     )
 
     if env_args.task_name == "openended":
-        AGENT_TEST.flag.enable_chat = True
+        AGENT_TEST.flags.enable_chat = True
         env_args.wait_for_user_message = True
         env_args.task_kwargs = {"start_url": "https://www.google.com"}
 
@@ -87,12 +89,13 @@ def main():
         bgym.ExpArgs(
             agent_args=AGENT_TEST,
             env_args=env_args,
-            logging_level=logging.DEBUG,
+            logging_level=logging.INFO,
         ),
     ]
 
     for exp_args in exp_args_list:
-        benchmark = bgym.DEFAULT_BENCHMARKS["workarena_l2_agent_curriculum_eval"]()
+        # benchmark = bgym.DEFAULT_BENCHMARKS["workarena_l2_agent_curriculum_eval"]()
+        benchmark = bgym.DEFAULT_BENCHMARKS["assistantbench"]()
         exp_args.agent_args.set_benchmark(
             benchmark, demo_mode=True
         )  # Override Some flags based on the benchmark.

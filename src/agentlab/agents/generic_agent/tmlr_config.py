@@ -1,3 +1,7 @@
+"""
+Specific configurations for our 2024 TMLR submission.
+"""
+
 from copy import deepcopy
 
 from agentlab.agents import dynamic_prompting as dp
@@ -56,10 +60,12 @@ def get_base_agent(llm_config: str):
 def get_vision_agent(llm_config: str):
     flags = deepcopy(BASE_FLAGS)
     flags.obs.use_screenshot = True
-    return GenericAgentArgs(
+    agent_args = GenericAgentArgs(
         chat_model_args=CHAT_MODEL_ARGS_DICT[llm_config],
         flags=flags,
     )
+    agent_args.agent_name = f"{agent_args.agent_name}_vision"
+    return agent_args
 
 
 def get_som_agent(llm_config: str):

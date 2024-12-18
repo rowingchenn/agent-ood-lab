@@ -1,8 +1,8 @@
 import gzip
 import logging
 import pickle
-import re
 import uuid
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -13,43 +13,185 @@ from slugify import slugify
 
 from agentlab.agents.agent_args import AgentArgs
 from agentlab.analyze import inspect_results
-from agentlab.experiments import args
 from agentlab.experiments import reproducibility_util as repro
 from agentlab.experiments.exp_utils import RESULTS_DIR, add_dependencies
-from agentlab.experiments.launch_exp import (
-    find_incomplete,
-    non_dummy_count,
-    run_experiments,
-)
+from agentlab.experiments.launch_exp import find_incomplete, non_dummy_count, run_experiments
 
 logger = logging.getLogger(__name__)
 
 
+def make_study(
+    agent_args: list[AgentArgs] | AgentArgs,
+    benchmark: bgym.Benchmark | str,
+    logging_level_stdout=logging.WARNING,
+    suffix="",
+    comment=None,
+    ignore_dependencies=False,
+):
+    """Run a list of agents on a benchmark.
+
+    Args:
+        agent_args: list[AgentArgs] | AgentArgs
+            The agent configuration(s) to run. *IMPORTANT*: these objects will be pickled and
+            unpickled.  Make sure they are imported from a package that is accessible from
+            PYTHONPATH. Otherwise, it won't load in agentlab-xray.
+        benchmark: bgym.Benchmark | str
+            The benchmark to run the agents on. See bgym.DEFAULT_BENCHMARKS for the main ones. You
+            can also make your own by modifying an existing one.
+        logging_level_stdout: int
+            The logging level for the stdout of the main script. Each job will have its own logging
+            level that will save into file and can be seen in agentlab-xray.
+        suffix: str
+            A suffix to add to the study name. This can be useful to keep track of your experiments.
+            By default the study name contains agent name, benchmark name and date.
+        comment: str
+            Extra comments from the authors of this study to be stored in the reproducibility
+            information. Leave any extra information that can explain why results could be different
+            than expected.
+        ignore_dependencies: bool
+            If True, ignore the dependencies of the tasks in the benchmark. *Use with caution.* So
+            far, only WebArena and VisualWebArena have dependencies between tasks to minimize the
+            influence of solving one task before another one. This dependency graph allows
+            experiments to run in parallel while respecting task dependencies. However, it still
+            can't run more than 4 and, in practice it's speeding up evaluation by a factor of only
+            3x compare to sequential executionz. To accelerate execution, you can ignore
+            dependencies and run in full parallel. This leads to a decrease in performance of about
+            1%-2%, and could be more. Note: ignore_dependencies on VisualWebArena doesn't work.
+
+    Returns:
+        Study object or SequentialStudies object if the benchmark requires manual reset after each
+        evaluation such as WebArena and VisualWebArena.
+    """
+
+    if not isinstance(agent_args, (list, tuple)):
+        agent_args = [agent_args]
+
+    if isinstance(benchmark, str):
+        benchmark = bgym.DEFAULT_BENCHMARKS[benchmark.lower()]()
+
+    if "webarena" in benchmark.name and len(agent_args) > 1:
+        logger.warning(
+            "*WebArena* requires manual reset after each evaluation. Running through SequentialStudies."
+        )
+        studies = []
+        for agent in agent_args:
+            studies.append(
+                Study(
+                    [agent],
+                    benchmark,
+                    logging_level=logging_level_stdout,
+                    suffix=suffix,
+                    comment=comment,
+                    ignore_dependencies=ignore_dependencies,
+                )
+            )
+
+        return SequentialStudies(studies)
+    else:
+        return Study(
+            agent_args,
+            benchmark,
+            logging_level=logging_level_stdout,
+            suffix=suffix,
+            comment=comment,
+            ignore_dependencies=ignore_dependencies,
+        )
+
+
+class AbstractStudy(ABC):
+    """Abstract class for a study."""
+
+    dir: Path = None
+    suffix: str = ""
+
+    @abstractmethod
+    def find_incomplete(self, include_errors=True):
+        """Prepare the study for relaunching by finding incomplete experiments"""
+
+    @abstractmethod
+    def run(self, n_jobs=1, parallel_backend="ray", strict_reproducibility=False, n_relaunch=3):
+        """Run the study"""
+
+    def make_dir(self, exp_root=RESULTS_DIR):
+        """Create a directory for the study"""
+        if self.dir is None:
+            dir_name = f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_{self.name}"
+
+            self.dir = Path(exp_root) / dir_name
+        self.dir.mkdir(parents=True, exist_ok=True)
+
+    def save(self, exp_root=RESULTS_DIR):
+        """Pickle the study to the directory"""
+        # TODO perhaps remove exp_args_list before pickling and when loading bring them from the individual directories
+
+        self.make_dir(exp_root=exp_root)
+        with gzip.open(self.dir / "study.pkl.gz", "wb") as f:
+            pickle.dump(self, f)
+
+    def get_results(self, suffix="", also_save=True):
+        """Recursively load all results from the study directory and summarize them."""
+        result_df = inspect_results.load_result_df(self.dir)
+        error_report = inspect_results.error_report(result_df, max_stack_trace=3, use_log=True)
+        summary_df = inspect_results.summarize_study(result_df)
+
+        if also_save:
+            suffix = f"_{suffix}" if suffix else ""
+            result_df.to_csv(self.dir / f"result_df{suffix}.csv")
+            summary_df.to_csv(self.dir / f"summary_df{suffix}.csv")
+            (self.dir / f"error_report{suffix}.md").write_text(error_report)
+
+        return result_df, summary_df, error_report
+
+
 @dataclass
-class Study:
+class Study(AbstractStudy):
     """A study coresponds to one or multiple agents evaluated on a benchmark.
 
     This is part of the high level API to help keep experiments organized and reproducible.
 
     Attributes:
-        benchmark: Benchmark | str
-            The benchmark to evaluate the agents on. If a string is provided, it will be
-            converted to the corresponding benchmark using bgym.DEFAULT_BENCHMARKS.
-
         agent_args: list[AgentArgs]
-            The list of agents to evaluate.
-
+            The agent configuration(s) to run. *IMPORTANT*: these objects will be pickled and
+            unpickled.  Make sure they are imported from a package that is accessible from
+            PYTHONPATH. Otherwise, it won't load in agentlab-xray.
+        benchmark: bgym.Benchmark | str
+            The benchmark to run the agents on. See bgym.DEFAULT_BENCHMARKS for the main ones. You
+            can also make your own by modifying an existing one.
         dir: Path
-            The directory where the results will be saved.
-
+            The directory where the study will be saved. If None, a directory will be created in
+            RESULTS_DIR.
         suffix: str
-            A suffix to add to the study name
-
+            A suffix to add to the study name. This can be useful to keep track of your experiments.
+            By default the study name contains agent name, benchmark name and date.
         uuid: str
-            A unique identifier for the study
-
+            A unique identifier for the study.
         reproducibility_info: dict
-            The reproducibility information for the study.
+            Information about the study that may affect the reproducibility of the experiment. e.g.:
+            versions of BrowserGym, benchmark, AgentLab...
+        logging_level: int
+            The logging level for individual jobs.
+        logging_level_stdout: int
+            The logging level for the stdout of the main script. Each job will have its own logging
+            level that will save into file and can be seen in agentlab-xray.
+        comment: str
+            Extra comments from the authors of this study to be stored in the reproducibility
+            information. Leave any extra information that can explain why results could be different
+            than expected.
+        ignore_dependencies: bool
+            If True, ignore the dependencies of the tasks in the benchmark. *Use with caution.* So
+            far, only WebArena and VisualWebArena have dependencies between tasks to minimize the
+            influence of solving one task before another one. This dependency graph allows
+            experiments to run in parallel while respecting task dependencies. However, it still
+            can't run more than 4 and, in practice it's speeding up evaluation by a factor of only
+            3x compare to sequential executionz. To accelerate execution, you can ignore
+            dependencies and run in full parallel. This leads to a decrease in performance of about
+            1%-2%, and could be more. Note: ignore_dependencies on VisualWebArena doesn't work.
+        avg_step_timeout: int
+            The average step timeout in seconds. This is used to stop the experiments if they are
+            taking too long. The default is 60 seconds.
+        demo_mode: bool
+            If True, the experiments will be run in demo mode, which will record videos, and enable
+            visual effects for actions.
     """
 
     agent_args: list[AgentArgs] = None
@@ -62,23 +204,27 @@ class Study:
     logging_level_stdout: int = logging.WARNING
     comment: str = None  # Extra comments from the authors of this study
     ignore_dependencies: bool = False
+    avg_step_timeout: int = 60
+    demo_mode: bool = False
 
     def __post_init__(self):
+        """Initialize the study. Set the uuid, and generate the exp_args_list."""
         self.uuid = uuid.uuid4()
         if isinstance(self.benchmark, str):
-            self.benchmark = bgym.DEFAULT_BENCHMARKS[self.benchmark]()
+            self.benchmark = bgym.DEFAULT_BENCHMARKS[self.benchmark.lower()]()
         if isinstance(self.dir, str):
             self.dir = Path(self.dir)
         self.make_exp_args_list()
 
     def make_exp_args_list(self):
-        
+        """Generate the exp_args_list from the agent_args and the benchmark."""
         self.exp_args_list = _agents_on_benchmark(
             self.agent_args,
             self.benchmark,
             logging_level=self.logging_level,
             logging_level_stdout=self.logging_level_stdout,
             ignore_dependencies=self.ignore_dependencies,
+            demo_mode=self.demo_mode,
         )
 
     def find_incomplete(self, include_errors=True):
@@ -106,7 +252,15 @@ class Study:
     def set_reproducibility_info(self, strict_reproducibility=False, comment=None):
         """Gather relevant information that may affect the reproducibility of the experiment
 
-        e.g.: versions of BrowserGym, benchmark, AgentLab..."""
+        e.g.: versions of BrowserGym, benchmark, AgentLab...
+
+        Args:
+            strict_reproducibility: bool
+                If True, all modifications have to be committed before running the experiments.
+                Also, if relaunching a study, it will not be possible if the code has changed.
+            comment: str
+                Extra comment to add to the reproducibility information.
+        """
         agent_names = [a.agent_name for a in self.agent_args]
         info = repro.get_reproducibility_info(
             agent_names,
@@ -114,6 +268,7 @@ class Study:
             self.uuid,
             ignore_changes=not strict_reproducibility,
             comment=comment,
+            allow_bypass_benchmark_version=not strict_reproducibility,
         )
         if self.reproducibility_info is not None:
             repro.assert_compatible(
@@ -143,7 +298,7 @@ class Study:
             self._run(n_jobs, parallel_backend, strict_reproducibility)
 
             suffix = f"trial_{i + 1}_of_{n_relaunch}"
-            _, summary_df, error_report = self.get_results(suffix=suffix)
+            _, summary_df, _ = self.get_results(suffix=suffix)
             logger.info("\n" + str(summary_df))
 
             n_incomplete, n_error = self.find_incomplete(include_errors=relaunch_errors)
@@ -172,13 +327,14 @@ class Study:
         Args:
             n_jobs: int
                 Number of parallel jobs.
-
             parallel_backend: str
                 Parallel backend to use. Either "joblib", "dask" or "sequential".
-
             strict_reproducibility: bool
                 If True, all modifications have to be committed before running the experiments.
                 Also, if relaunching a study, it will not be possible if the code has changed.
+
+        Raises:
+            ValueError: If the exp_args_list is None.
         """
 
         if self.exp_args_list is None:
@@ -188,7 +344,13 @@ class Study:
         self.benchmark.prepare_backends()
         logger.info("Backends ready.")
 
-        run_experiments(n_jobs, self.exp_args_list, self.dir, parallel_backend=parallel_backend)
+        run_experiments(
+            n_jobs,
+            self.exp_args_list,
+            self.dir,
+            parallel_backend=parallel_backend,
+            avg_step_timeout=self.avg_step_timeout,
+        )
 
     def append_to_journal(self, strict_reproducibility=True):
         """Append the study to the journal.
@@ -196,65 +358,18 @@ class Study:
         Args:
             strict_reproducibility: bool
                 If True, incomplete experiments will raise an error.
-
-        Raises:
-            ValueError: If the reproducibility information is not compatible
-                with the report.
         """
+        _, summary_df, _ = self.get_results()
         repro.append_to_journal(
             self.reproducibility_info,
-            self.get_report(),
+            summary_df,
             strict_reproducibility=strict_reproducibility,
         )
-
-    def get_results(self, suffix="", also_save=True):
-        result_df = inspect_results.load_result_df(self.dir)
-        error_report = inspect_results.error_report(result_df, max_stack_trace=3, use_log=True)
-        summary_df = inspect_results.summarize_study(result_df)
-
-        if also_save:
-            suffix = f"_{suffix}" if suffix else ""
-            result_df.to_csv(self.dir / f"result_df{suffix}.csv")
-            summary_df.to_csv(self.dir / f"summary_df{suffix}.csv")
-            (self.dir / f"error_report{suffix}.md").write_text(error_report)
-
-        return result_df, summary_df, error_report
 
     @property
     def name(self):
         agent_names = [a.agent_name for a in self.agent_args]
-        if len(agent_names) == 1:
-            study_name = f"{agent_names[0]}_on_{self.benchmark.name}"
-        else:
-            study_name = f"{len(agent_names)}_agents_on_{self.benchmark.name}"
-
-        study_name = slugify(study_name, max_length=100, allow_unicode=True)
-
-        if self.suffix:
-            study_name += f"_{self.suffix}"
-        return study_name
-
-    def make_dir(self, exp_root=RESULTS_DIR):
-        if self.dir is None:
-            dir_name = f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_{self.name}"
-
-            self.dir = Path(exp_root) / dir_name
-        self.dir.mkdir(parents=True, exist_ok=True)
-
-    def save(self):
-        """Pickle the study to the directory"""
-
-        # TODO perhaps remove exp_args_list before pickling and when loading bring them from the individual directories
-
-        self.make_dir()
-
-        with gzip.open(self.dir / "study.pkl.gz", "wb") as f:
-            pickle.dump(self, f)
-
-    def get_report(self, ignore_cache=False, ignore_stale=False):
-        return inspect_results.get_study_summary(
-            self.dir, ignore_cache=ignore_cache, ignore_stale=ignore_stale
-        )
+        return _make_study_name(agent_names, [self.benchmark.name], self.suffix)
 
     def override_max_steps(self, max_steps):
         for exp_args in self.exp_args_list:
@@ -287,6 +402,73 @@ class Study:
     @staticmethod
     def load_most_recent(root_dir: Path = None, contains=None) -> "Study":
         return Study.load(get_most_recent_study(root_dir, contains=contains))
+
+
+def _make_study_name(agent_names, benchmark_names, suffix=None):
+    """Make a study name from the agent and benchmark names."""
+    # extract unique agent and benchmark names
+    agent_names = list(set(agent_names))
+    benchmark_names = list(set(benchmark_names))
+
+    if len(agent_names) == 1:
+        agent_name = agent_names[0]
+    else:
+        agent_name = f"{len(agent_names)}_agents"
+
+    if len(benchmark_names) == 1:
+        benchmark_name = benchmark_names[0]
+    else:
+        benchmark_name = f"{len(benchmark_names)}_benchmarks"
+
+    study_name = f"{agent_name}_on_{benchmark_name}_{suffix if suffix else ''}"
+
+    return slugify(study_name, max_length=200, allow_unicode=True)
+
+
+@dataclass
+class SequentialStudies(AbstractStudy):
+    """
+    Sequential execution of multiple studies.
+
+    This is required for e.g. WebArena, where a server reset is required between evaluations of each agent.
+    """
+
+    studies: list[Study]
+
+    @property
+    def name(self):
+        """The name of the study."""
+        agent_names = [a.agent_name for study in self.studies for a in study.agent_args]
+        benchmark_names = [study.benchmark.name for study in self.studies]
+        return _make_study_name(agent_names, benchmark_names, self.suffix)
+
+    def find_incomplete(self, include_errors=True):
+        for study in self.studies:
+            study.find_incomplete(include_errors=include_errors)
+
+    def run(self, n_jobs=1, parallel_backend="ray", strict_reproducibility=False, n_relaunch=3):
+
+        # This sequence of of making directories is important to make sure objects are materialized
+        # properly before saving. Otherwise relaunch may not work properly.
+        self.make_dir()
+        for study in self.studies:
+            study.make_dir(exp_root=self.dir)
+
+        self.save()
+
+        for study in self.studies:
+            study.run(n_jobs, parallel_backend, strict_reproducibility, n_relaunch)
+        _, summary_df, _ = self.get_results()
+        logger.info("\n" + str(summary_df))
+        logger.info(f"SequentialStudies {self.name} finished.")
+
+    def override_max_steps(self, max_steps):
+        for study in self.studies:
+            study.override_max_steps(max_steps)
+
+    def append_to_journal(self, strict_reproducibility=True):
+        for study in self.studies:
+            study.append_to_journal(strict_reproducibility=strict_reproducibility)
 
 
 def get_most_recent_study(
@@ -325,7 +507,7 @@ def get_most_recent_study(
 
 
 def set_demo_mode(env_args_list: list[EnvArgs]):
-
+    """Set the demo mode for the experiments. This can be useful for generating videos for demos."""
     for env_args in env_args_list:
         env_args.viewport = {"width": 1280, "height": 720}
         env_args.record_video = True
@@ -352,9 +534,16 @@ def _agents_on_benchmark(
             If True, the experiments will be run in demo mode.
         logging_level: int
             The logging level for individual jobs.
+        logging_level_stdout: int
+            The logging level for the stdout.
+        ignore_dependencies: bool
+            If True, the dependencies will be ignored and all experiments can be run in parallel.
 
     Returns:
-        study: Study
+        list[ExpArgs]: The list of experiments to run.
+
+    Raises:
+        ValueError: If multiple agents are run on a benchmark that requires manual reset.
     """
 
     if not isinstance(agents, (list, tuple)):
@@ -373,14 +562,6 @@ def _agents_on_benchmark(
     if demo_mode:
         set_demo_mode(env_args_list)
 
-    # exp_args_list = args.expand_cross_product(
-    #     ExpArgs(
-    #         agent_args=args.CrossProd(agents),
-    #         env_args=args.CrossProd(env_args_list),
-    #         logging_level=logging_level,
-    #         logging_level_stdout=logging_level_stdout,
-    #     )
-    # )  # type: list[ExpArgs]
     exp_args_list = []
 
     # Get the path to the current script (study.py)

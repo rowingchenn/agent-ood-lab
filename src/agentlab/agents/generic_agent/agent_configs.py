@@ -1,3 +1,7 @@
+"""
+Basic flags and agent configurations for generic agents.
+"""
+
 import bgym
 
 from agentlab.agents import dynamic_prompting as dp
@@ -193,8 +197,15 @@ FLAGS_8B = GenericPromptFlags(
     add_missparsed_messages=True,
 )
 
+
 AGENT_8B = GenericAgentArgs(
     chat_model_args=CHAT_MODEL_ARGS_DICT["meta-llama/Meta-Llama-3-8B-Instruct"],
+    flags=FLAGS_8B,
+)
+
+
+AGENT_LLAMA31_8B = GenericAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openrouter/meta-llama/llama-3.1-8b-instruct"],
     flags=FLAGS_8B,
 )
 
