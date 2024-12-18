@@ -62,9 +62,9 @@ FLAG_TEST = AlfworldPromptFlags(
 )
 
 AGENT_TEST = AlfworldAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["local/Meta-Llama-3-8B-Instruct"],
+    # chat_model_args=CHAT_MODEL_ARGS_DICT["local/Meta-Llama-3-8B-Instruct"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o"],
-    # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["claude-3-5-sonnet-20241022"],
     flags=FLAG_TEST,
     max_retry=3,
@@ -73,7 +73,7 @@ AGENT_TEST = AlfworldAgentArgs(
 
 def main():
     exp_dir = "./test_embodied_ood_results/"
-    ood_file_dir = "/home/weichenzhang/LLMAgentOODGym/agent_ood_gym/embodiedgym/core/src/embodiedgym/core/configs/ood_first_step.json"
+    ood_file_dir = "/home/weichenzhang/LLMAgentOODGym/agent_ood_gym/embodiedgym/core/src/embodiedgym/core/configs/ood_semantic_last_step.json"
 
     # 打开并读取 JSON 文件
     with open(ood_file_dir, "r", encoding="utf-8") as file:

@@ -62,10 +62,10 @@ FLAG_TEST = AlfworldPromptFlags(
 )
 
 AGENT_TEST = AlfworldAgentArgs(
-    # chat_model_args=CHAT_MODEL_ARGS_DICT["local/Meta-Llama-3-8B-Instruct"],
+    chat_model_args=CHAT_MODEL_ARGS_DICT["local/Meta-Llama-3-8B-Instruct"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o"],
     # chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini"],
-    chat_model_args=CHAT_MODEL_ARGS_DICT["claude-3-5-sonnet-20241022"],
+    # chat_model_args=CHAT_MODEL_ARGS_DICT["claude-3-5-sonnet-20241022"],
     flags=FLAG_TEST,
     max_retry=3,
 )
@@ -73,7 +73,7 @@ AGENT_TEST = AlfworldAgentArgs(
 
 def main():
     # JSON文件路径
-    ood_file_dir = "/home/weichenzhang/LLMAgentOODGym/agent_ood_gym/embodiedgym/core/src/embodiedgym/core/configs/ood_semantic_first_step.json"
+    ood_file_dir = "/home/weichenzhang/LLMAgentOODGym/agent_ood_gym/embodiedgym/core/src/embodiedgym/core/configs/ood_semantic_first_step_llama.json"
 
     # 打开并读取 JSON 文件
     with open(ood_file_dir, "r", encoding="utf-8") as file:
@@ -83,7 +83,7 @@ def main():
     json_filename = os.path.splitext(os.path.basename(ood_file_dir))[0]
 
     # 创建总体保存的大文件夹名称
-    exp_dir = f"./claude/embodied_ood_results_{json_filename}_magic/"
+    exp_dir = f"./llama1218/embodied_ood_results_{json_filename}_magic/"
     os.makedirs(exp_dir, exist_ok=True)
 
     # 使用 tqdm 包装数据以显示进度条
@@ -91,8 +91,8 @@ def main():
         task_id = sample["task_id"]
         task_name = sample["task_name"]
 
-        if task_id <38:
-            continue
+        # if task_id < 45:
+        #     continue
 
         # 创建每个样本的单独文件夹
         sample_dir = os.path.join(exp_dir, f"task_{task_id}")
