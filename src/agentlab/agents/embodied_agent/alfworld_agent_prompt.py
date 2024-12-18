@@ -32,20 +32,22 @@ class AlfworldPromptFlags(dp.Flags):
     use_plan: bool = False
     use_criticise: bool = False
     use_thinking: bool = False
+    use_memory: bool = False
     use_concrete_example: bool = True
+    use_abstract_example: bool = True
     use_hints: bool = False
     enable_chat: bool = False  # Currently not supported
     max_prompt_tokens: int = None
     be_cautious: bool = True
     extra_instructions: str | None = None
     add_missparsed_messages: bool = True
+    max_trunc_itr: int = 20
 
 
 # TODO: 设计alfworld的prompt
 class AlfworldPrompt(dp.Shrinkable):
     """
     Attributes:
-        info: Contains the admissable actions.
         obs_history (list[dict]): The history of observations.
         actions (list[str]): The list of actions taken by the agent.
         memories (list[str]): The list of memories.
@@ -53,11 +55,19 @@ class AlfworldPrompt(dp.Shrinkable):
         previous_plan (str): The previous plan.
         step (int): The current step.
         flags (AlfworldPromptFlags): The flags used to control the features in the agent.
+
+    obs keys:
+        - "chat_messages"
+        - "goal_object"
+        - "environment_description"
+        - "admissible_commands"
+        - "last_action"
+        - "last_action_error"
+        - "elapsed_time"
     """
 
     def __init__(
         self,
-        info,
         obs_history: list[dict],
         actions: list[str],
         memories: list[str],
@@ -84,7 +94,7 @@ class AlfworldPrompt(dp.Shrinkable):
             )
 
         self.obs = adp.Observation(obs_history[-1], flags.obs)
-        self.action_prompt = dp.ActionPrompt(info, action_flags=flags.actions)
+        self.action_prompt = adp.ActionPrompt(obs_history[-1], action_flags=flags.actions)
         self.be_cautious = adp.BeCautious(visible=lambda: flags.be_cautious)
         self.think = adp.Think(visible=lambda: flags.use_thinking)
         self.hints = adp.Hints(visible=lambda: flags.use_hints)
@@ -116,7 +126,7 @@ class AlfworldPrompt(dp.Shrinkable):
 
 Here is a concrete example of how to format your answer.
 Make sure to follow the template with proper tags:
-{self.thinking.concrete_ex}\
+{self.think.concrete_ex}\
 {self.plan.concrete_ex}\
 {self.memory.concrete_ex}\
 {self.criticise.concrete_ex}\
@@ -139,19 +149,18 @@ answer:
 """
             )
 
-        if self.flags.use_concrete_example:
-            prompt.add_text(
-                f"""
-# Concrete Example
-
-Here is a concrete example of how to format your answer.
-Make sure to follow the template with proper tags:
-{self.think.concrete_ex}\
-{self.plan.concrete_ex}\
-{self.memory.concrete_ex}\
-{self.criticise.concrete_ex}\
-{self.action_prompt.concrete_ex}\
-"""
-            )
-
         return prompt
+
+    def shrink(self):
+        self.history.shrink()
+        self.obs.shrink()
+
+    # currently, we only parse the action and think prompt for alfworld
+    def _parse_answer(self, text_answer):
+        ans_dict = {}
+        ans_dict.update(self.think.parse_answer(text_answer))
+        # ans_dict.update(self.plan.parse_answer(text_answer))
+        # ans_dict.update(self.memory.parse_answer(text_answer))
+        # ans_dict.update(self.criticise.parse_answer(text_answer))
+        ans_dict.update(self.action_prompt.parse_answer(text_answer))
+        return ans_dict

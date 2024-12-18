@@ -69,6 +69,12 @@ CHAT_MODEL_ARGS_DICT = {
         max_input_tokens=16_384,
         max_new_tokens=4096,
     ),
+    "claude-3-5-sonnet-20241022": OpenAIModelArgs(  # since we use same third party api, so we only need to change name for claude
+        model_name_or_path="claude-3-5-sonnet-20241022",
+        max_total_tokens=128_000,
+        max_input_tokens=128_000,
+        max_new_tokens=16_384,
+    ),
     "azure/gpt-35-turbo/gpt-35-turbo": AzureModelArgs(
         model_name_or_path="gpt-35-turbo",
         deployment_name="gpt-35-turbo",
@@ -212,5 +218,24 @@ CHAT_MODEL_ARGS_DICT = {
         top_p=0.5,
         repetition_penalty=1.2,
         do_sample=True,
+    ),
+    "local/Llama-3-8B-Instruct-sft-alfworld": LocalHuggingFaceModelArgs(
+        model_name_or_path="leap-llm/Meta-Llama-3-8B-Instruct-sft-alfworld-iter0",
+        max_new_tokens=4096,
+        max_retry=4,
+        temperature=1e-1,
+        top_k=50,
+        top_p=0.9,
+        repetition_penalty=1.2,
+        do_sample=True,
+    ),
+    "local/Meta-Llama-3-8B-Instruct": LocalHuggingFaceModelArgs(
+        model_name_or_path="meta-llama/Meta-Llama-3-8B-Instruct",
+        max_new_tokens=4096,
+        max_retry=4,
+        temperature=1e-1,
+        top_k=50,
+        top_p=0.9,
+        repetition_penalty=1.2,
     ),
 }

@@ -11,6 +11,7 @@ from warnings import warn
 import bgym
 from browsergym.core.action.base import AbstractActionSet
 from browsergym.utils.obs import flatten_axtree_to_str, flatten_dom_to_str, overlay_som, prune_html
+from embodiedgym.core.env import OOD_ACTION
 
 from agentlab.agents import dynamic_prompting as dp
 from agentlab.llm.llm_utils import (
@@ -46,6 +47,10 @@ class ObsFlags(dp.Flags):
     use_action_history: bool = False
     use_think_history: bool = False
 
+    # include_pddl_state: bool = True
+    # include_high_level_plan: bool = True
+    # include_scene_description: bool = True
+
 
 # TODO: 目前只有is_strict这一个flag，主要是因为alfworld获取actions都是每一步当场获取admisible_commands
 # 没办法像BrowserGym那样固定一个action_set并配置prompt
@@ -54,11 +59,9 @@ class ActionFlags(dp.Flags):
     """
     Attributes:
         is_strict (bool): If True, the agent must choose from the admissible actions.
-        blue_limit (float): When is_strict is False, the minimum BLEU score required to match the action to the admissible actions.
     """
 
     is_strict: bool = None
-    blue_limit: float = 0.8
 
 
 class Error(dp.PromptElement):
@@ -73,32 +76,24 @@ class Error(dp.PromptElement):
         self._prompt = f"\n{prefix}Error from previous action:\n{error}\n"
 
 
-# TODO: 应该为TextWorld返回的文字
+# TODO: 应该为每一步TextWorld返回的文字中，对环境描述的信息。
 class Observation(dp.PromptElement):
-    """Observation of the current step.
-
-    Contains the html, the accessibility tree and the error logs.
-    """
+    """Observation of the current step."""
 
     def __init__(self, obs, flags: ObsFlags) -> None:
         super().__init__()
         self.flags = flags
         self.obs = obs
-
-        self.env_description = obs["env_description"]
-
-    def shrink(self):
-        pass
+        self.env_description = obs["environment_description"]
 
     @property
     def _prompt(self) -> str:
-        return f"""
-# Observation of current step:
-{self.env_description}
+        prompt = "# Observation of current step:\n"
+        prompt += self.env_description
+        prompt += "\n\n"
+        return prompt
 
-"""
-
-    def add_screenshot(self, prompt: BaseMessage) -> BaseMessage:
+    def shrink(self):
         pass
 
 
@@ -106,8 +101,20 @@ class BeCautious(dp.PromptElement):
     def __init__(self, visible: bool = True) -> None:
         super().__init__(visible=visible)
         self._prompt = f"""\
-\nBe very cautious. Avoid submitting anything before verifying the effect of your
-actions. Take the time to explore the effect of safe actions first. \n"""  # TODO: 提示词有待进一步完善，比如：For example...，给agent举例子；
+\nBe very cautious. Avoid submitting any action before verifying its potential effect. 
+Take time to explore safe actions and analyze the environment thoroughly. 
+
+Guidelines:
+1. Verify the preconditions of your action. Ensure all necessary objects and conditions are in place.
+2. Anticipate the consequences of your action. Consider how it impacts the overall task progress.
+3. Avoid repeating past mistakes. Review your action history and any errors before deciding.
+4. If unsure, favor exploratory actions to gather more information.
+5. Always check the state of the environment after performing an action to ensure it aligns with your expectations.
+
+Example:
+- If you plan to pick up an object, ensure it is reachable and not obstructed.
+- Before opening a container, verify that it is not locked.
+\n"""
 
 
 # TODO: 这个GoalInstructions还没有改，因为基本和alfworld中需要的差不多。但还可以润色改进
@@ -118,10 +125,10 @@ class GoalInstructions(dp.PromptElement):
             dict(
                 type="text",
                 text=f"""\
-# Instructions
-Review the current state of the page and all other information to find the best
-possible next action to accomplish your goal. Your answer will be interpreted
-and executed by a program, make sure to follow the formatting instructions.
+# Goal Instructions
+Review the current environment state and provided information to determine the best possible next action.
+I will give you a set of admissible actions you can take. Remember you can only take one action at a time. And only use actions listed after ''.
+Your response will be executed by a program, so ensure it adheres to the required formatting.
 
 ## Goal:
 """,
@@ -152,13 +159,16 @@ class ChatInstructions(dp.PromptElement):
         pass
 
 
-# TODO: prompt设计待完成，针对alfworld的hints
 class Hints(dp.PromptElement):
-    """Not super useful and stale."""
-
-    # NOTE: are these hints still relevant?
     _prompt = """\
 Note:
+* Carefully analyze the current environment and observe any clues in the scene description.
+* Some tasks may require chaining multiple actions together to achieve a goal.
+* Objects in the environment often need to be manipulated in a logical sequence. For example, open a container before retrieving an item inside.
+* Pay close attention to the available actions and their arguments for choosing the most effective step.
+* If an action fails, review previous observations or errors for possible reasons.
+* Ensure that all required objects are in the correct state before proceeding to subsequent actions.
+* Some tasks may involve exploration. Consider trying safe actions to gather more information.
 """
 
 
@@ -174,15 +184,27 @@ Your goal is to complete the task efficiently and accurately while reasoning abo
 
 class ActionPrompt(dp.PromptElement):
 
-    def __init__(self, info, action_flags) -> None:
+    def __init__(self, obs, action_flags) -> None:
         super().__init__()
-        self.info = info
+        self.obs = obs
         self.action_flags = action_flags
-        self.actions = self.info.get(info.get("admissible_commands", [[]])[0])
-        self.actions = "\n".join(self.actions)
-        self._prompt = "Available actions:\n" + self.actions + "\n"
-        self._concrete_ex = """"""
-        self._abstract_ex = f""""""
+        action_set_generic_info = """\
+Note: This action set allows you to interact with your environment. 
+You must select ONLY ONE action from the following list. 
+Remember to put the action in <action></action> tags!
+"""
+        self.actions = self.obs.get("admissible_commands")
+        self._prompt = f"# Admissible actions:\n{action_set_generic_info}\n{self.actions}\n"
+        self._concrete_ex = """
+<action>
+go to cabinet 1
+</action>
+"""
+        self._abstract_ex = f"""
+<action>
+Any action from the admissible actions. Or the extra action mentioned before.
+</action>
+"""
 
     def bleu_score(reference, candidate):
         reference_tokens = reference.split()
@@ -192,47 +214,48 @@ class ActionPrompt(dp.PromptElement):
         score = sentence_bleu([reference_tokens], candidate_tokens, smoothing_function=smoothie)
         return score
 
-    def _parse_answer(self, action, choices=None):
-        """ """
-        if not choices:
-            return action
+    def _parse_answer(self, action: str):
+        """
+        action: str, the action to be parsed
+        choices: list[str], the admissible actions provided by the environment
+        """
 
         try:
-            action = parse_html_tags_raise(action, keys=["action"], merge_multiple=True)
+            ans_dict = parse_html_tags_raise(action, keys=["action"], merge_multiple=True)
         except ParseError as e:
-            raise e
+            if self.action_flags.is_strict:
+                raise e
+            else:
+                pass  # 暂时未实现，也就是如果输出了<action>xxx[/action]这样的标签，且is_strict为False，我们应该怎么处理
 
-        if self.action_flags.is_strict:
-            if action in choices:
-                return action
-            else:
-                raise ParseError(
-                    f"Action {action} is not in the admissible actions. Make sure your answer is restricted to the allowed actions."
-                )
-        else:
-            bleus = [self.bleu_score(choice, action) for choice in choices]
-            max_index = np.argmax(np.array(bleus))
-            max_score = bleus[max_index]
-            if max_score > self.action_flags.blue_limit:
-                return choices[max_index]
-            else:
-                raise ParseError(
-                    f"Action is not close enough to the admissible actions. The limit is set to {self.action_flags.blue_limit}."
-                )
+        return ans_dict
 
 
 # TODO: prompt设计待完成，针对alfworld的thinking
 class Think(dp.PromptElement):
-    _prompt = ""
+    _prompt = """
+# Think:
+Consider the current state of the environment and formulate a step-by-step reasoning process.
+Explain why this step is necessary and how it contributes to the overall goal. Be short and concise.
+Remember to put all the thinking in <think></think> tags! 
+"""
 
     _abstract_ex = """
 <think>
-Think step by step. 
+Think step by step. For example:
+1. Observe the current state and identify necessary actions.
+2. Break down the task into smaller, actionable steps.
+3. Justify each step logically, ensuring alignment with the goal.
 </think>
 """
     _concrete_ex = """
 <think>
-
+The task is to put some spraybottle on the toilet. To achieve this, 
+I first need to locate a spraybottle within the room. 
+Searching for the spraybottle is a critical first step because without it, the primary goal cannot be accomplished. 
+By systematically exploring the room, I can identify its exact location and retrieve it. 
+This step contributes to the overall goal by ensuring that I have the necessary item in hand before proceeding to the next actions, 
+such as moving to the toilet and placing the spraybottle on it.
 </think>
 """
 
@@ -328,43 +351,56 @@ class History(dp.Shrinkable):
         return "\n".join(prompts) + "\n"
 
 
+# def make_obs_preprocessor(flags: ObsFlags):
+# def obs_mapping(obs: dict):
+#     obs = copy(obs)
+#     obs["dom_txt"] = flatten_dom_to_str(
+#         obs["dom_object"],
+#         extra_properties=obs["extra_element_properties"],
+#         with_visible=flags.extract_visible_tag,
+#         with_clickable=flags.extract_clickable_tag,
+#         with_center_coords=flags.extract_coords == "center",
+#         with_bounding_box_coords=flags.extract_coords == "box",
+#         filter_visible_only=flags.filter_visible_elements_only,
+#         filter_with_bid_only=flags.filter_with_bid_only,
+#         filter_som_only=flags.filter_som_only,
+#     )
+#     obs["axtree_txt"] = flatten_axtree_to_str(
+#         obs["axtree_object"],
+#         extra_properties=obs["extra_element_properties"],
+#         with_visible=flags.extract_visible_tag,
+#         with_clickable=flags.extract_clickable_tag,
+#         with_center_coords=flags.extract_coords == "center",
+#         with_bounding_box_coords=flags.extract_coords == "box",
+#         filter_visible_only=flags.filter_visible_elements_only,
+#         filter_with_bid_only=flags.filter_with_bid_only,
+#         filter_som_only=flags.filter_som_only,
+#     )
+#     obs["pruned_html"] = prune_html(obs["dom_txt"])
+#     obs["screenshot_som"] = overlay_som(
+#         obs["screenshot"], extra_properties=obs["extra_element_properties"]
+#     )
+
+#     return obs
+
+
 def make_obs_preprocessor(flags: ObsFlags):
-    def obs_mapping(obs: dict):
-        obs = copy(obs)
-        obs["dom_txt"] = flatten_dom_to_str(
-            obs["dom_object"],
-            extra_properties=obs["extra_element_properties"],
-            with_visible=flags.extract_visible_tag,
-            with_clickable=flags.extract_clickable_tag,
-            with_center_coords=flags.extract_coords == "center",
-            with_bounding_box_coords=flags.extract_coords == "box",
-            filter_visible_only=flags.filter_visible_elements_only,
-            filter_with_bid_only=flags.filter_with_bid_only,
-            filter_som_only=flags.filter_som_only,
-        )
-        obs["axtree_txt"] = flatten_axtree_to_str(
-            obs["axtree_object"],
-            extra_properties=obs["extra_element_properties"],
-            with_visible=flags.extract_visible_tag,
-            with_clickable=flags.extract_clickable_tag,
-            with_center_coords=flags.extract_coords == "center",
-            with_bounding_box_coords=flags.extract_coords == "box",
-            filter_visible_only=flags.filter_visible_elements_only,
-            filter_with_bid_only=flags.filter_with_bid_only,
-            filter_som_only=flags.filter_som_only,
-        )
-        obs["pruned_html"] = prune_html(obs["dom_txt"])
-        obs["screenshot_som"] = overlay_som(
-            obs["screenshot"], extra_properties=obs["extra_element_properties"]
-        )
+    def preprocess_obs(obs: dict) -> dict:
+        processed_obs = obs.copy()
+        # 这里好像没什么需要处理的
+        return processed_obs
 
-        return obs
-
-    return obs_mapping
+    return preprocess_obs
 
 
 class Memory(dp.PromptElement):
-    _prompt = ""  # provided in the abstract and concrete examples
+    _prompt = """
+# Memory:
+Write down any information you think might be useful, such as the location of observed items, 
+their status, and the important tasks you have already completed. And every memory should be based on the previous step.
+Add more information or modify the previous memory if necessary.
+Remember to put all the memory in <memory></memory> tags! Be concise and short.
+"""
 
     _abstract_ex = """
 <memory>
@@ -376,8 +412,7 @@ remember hints from previous steps in order to solve it.
 
     _concrete_ex = """
 <memory>
-I clicked on bid "32" to activate tab 2. The accessibility tree should mention
-focusable for elements of the form at next step.
+I used to be in the kitchen, where I found a ... Then I went to the bedroom, where I found a ... And I have already picked up a ...
 </memory>
 """
 
@@ -399,32 +434,31 @@ relevant and update it if necessary.
 
     _abstract_ex = """
 <plan>
-Provide a multi step plan that will guide you to accomplish the goal. There
-should always be steps to verify if the previous action had an effect. The plan
-can be revisited at each steps. Specifically, if there was something unexpected.
-The plan should be cautious and favor exploring befor submitting.
+Provide a step-by-step plan to accomplish the goal. The plan should include:
+1. Logical actions in sequence.
+2. Verification steps to ensure actions have the desired effect.
+3. Adaptability to adjust the plan if something unexpected occurs.
+
+For example:
+1. Observe the environment.
+2. Interact with an object (e.g., pick up the key).
+3. Use the object to achieve the goal (e.g., unlock the door).
 </plan>
 
-<step>Integer specifying the step of current action
+<step>Integer specifying the current step of the plan.
 </step>
 """
 
     _concrete_ex = """
 <plan>
-1. fill form (failed)
-    * type first name
-    * type last name
-2. Try to activate the form
-    * click on tab 2
-3. fill form again
-    * type first name
-    * type last name
-4. verify and submit
-    * verify form is filled
-    * submit if filled, if not, replan
+1. Locate the book on the shelf.
+2. Retrieve the book and place it on the table.
+3. Open the book to the specified page.
+4. Verify that the information matches the goal requirements.
+5. If the information is incorrect, replan and search for another source.
 </plan>
 
-<step>2</step>
+<step>3</step>
 """
 
     def _parse_answer(self, text_answer):
@@ -441,21 +475,37 @@ Write a first version of what you think is the right action.
 
 <criticise>
 Criticise action_draft. What could be wrong with it? Enumerate reasons why it
-could fail. Did your past actions had the expected effect? Make sure you're not
+could fail. Did your past actions have the expected effect? Make sure you're not
 repeating the same mistakes.
 </criticise>
 """
 
     _concrete_ex = """
 <action_draft>
-click("32")
+pick_up("red_apple")
 </action_draft>
 
 <criticise>
-click("32") might not work because the element is not visible yet. I need to
-explore the page to find a way to activate the form.
+The action 'pick_up("red_apple")' might fail because the apple is in a locked container.
+I need to unlock the container first. Additionally, the action might fail if the apple
+is not within reach or already in my inventory.
 </criticise>
 """
 
     def _parse_answer(self, text_answer):
         return parse_html_tags_raise(text_answer, optional_keys=["action_draft", "criticise"])
+
+
+def fit_tokens(
+    shrinkable: dp.Shrinkable,
+    max_prompt_tokens=None,
+    max_iterations=20,
+    model_name="openai/gpt-4",
+    additional_prompts=[""],
+):
+    """
+    Shrink a prompt element until it fits `max_prompt_tokens`.
+
+    Currently Alfworld is too simple to need this function.
+    """
+    return shrinkable.prompt

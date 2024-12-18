@@ -541,7 +541,8 @@ class LocalHuggingFaceChatModel(LocalChatModel):
                     prompt = self._format_messages(messages)
 
                 logger.debug("Encoding input prompt...")
-                inputs = self.tokenizer(prompt, return_tensors="pt")
+                device = self.llm.device
+                inputs = self.tokenizer(prompt, return_tensors="pt").to(device)
 
                 logger.debug("Generating response...")
                 output_ids = self.llm.generate(
