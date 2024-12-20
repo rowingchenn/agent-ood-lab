@@ -13,7 +13,7 @@ from agentlab.experiments.exp_utils import _episode_timeout, run_exp
 
 logger = logging.getLogger(__name__)
 
-run_exp = ray.remote(run_exp)
+# run_exp = ray.remote(run_exp)
 
 
 def execute_task_graph(exp_args_list: list[bgym.ExpArgs], avg_step_timeout=60):

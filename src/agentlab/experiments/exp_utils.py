@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from time import sleep, time
 
+import ray
 from browsergym.experiments.loop import ExpArgs, yield_all_exp_results
 from tqdm import tqdm
 
@@ -25,6 +26,7 @@ else:
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
+@ray.remote(num_gpus=3)
 def run_exp(exp_arg: ExpArgs, *dependencies, avg_step_timeout=60):
     """Run exp_args.run() with a timeout and handle dependencies."""
     # episode_timeout = _episode_timeout(exp_arg, avg_step_timeout=avg_step_timeout)
@@ -126,10 +128,10 @@ def add_dependencies(exp_args_list: list[ExpArgs], task_dependencies: dict[str, 
     for task_name, exp_args in exp_args_map.items():
         print(task_name)
         exp_args.depends_on = tuple(
-            exp_args_map[dep_name].exp_id for dep_name in task_dependencies[task_name] if dep_name in exp_args_map
+            exp_args_map[dep_name].exp_id
+            for dep_name in task_dependencies[task_name]
+            if dep_name in exp_args_map
         )
-
-    
 
     return exp_args_list
 

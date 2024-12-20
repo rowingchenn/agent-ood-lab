@@ -510,7 +510,10 @@ class LocalHuggingFaceChatModel(LocalChatModel):
             kwargs: Additional generation parameters passed to the parent class.
         """
         super().__init__(model_name_or_path, **kwargs)
+        import torch
 
+        if not torch.cuda.is_available():
+            raise ValueError("CUDA is not available. Please check your GPU configuration.")
         # Load tokenizer and model
         logger.debug("Loading tokenizer...")
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)

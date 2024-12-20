@@ -5,7 +5,9 @@ the command line.
 Copy this script and modify at will, but don't push your changes to the
 repository.
 """
+
 import bgym
+
 # from agent_ood_gym.browsergym.experiments import EnvArgs, ExpArgs, get_exp_result
 from src.agentlab.agents import dynamic_prompting as dp
 from src.agentlab.agents.generic_agent.generic_agent import GenericAgentArgs
@@ -28,6 +30,7 @@ from agentlab.agents.generic_agent import (
     AGENT_LLAMA31_70B,
     AGENT_TEST_LOCAL,
     AGENT_TEST_API,
+    AGENT_8B,
 )
 from src.agentlab.experiments.study import Study
 
@@ -35,8 +38,8 @@ logging.getLogger().setLevel(logging.INFO)
 
 # choose your agent or provide a new agent
 # agent_args = [AGENT_TEST_LOCAL]
-agent_args = [AGENT_4o]
-
+# agent_args = [AGENT_4o]
+agent_args = [AGENT_8B]
 
 # ## select the benchmark to run on
 # benchmark = "miniwob_tiny_test"
@@ -57,7 +60,7 @@ reproducibility_mode = False
 relaunch = False
 
 ## Number of parallel jobs
-n_jobs = 8  # Make sure to use 1 job when debugging in VSCode
+n_jobs = 3  # Make sure to use 1 job when debugging in VSCode
 # n_jobs = -1  # to use all available cores
 FLAGS_TEST = GenericPromptFlags(
     obs=dp.ObsFlags(
@@ -80,7 +83,7 @@ FLAGS_TEST = GenericPromptFlags(
     ),
     action=dp.ActionFlags(
         multi_actions=False,
-        action_set="bid", # change to benchmark specific action set!
+        action_set="bid",  # change to benchmark specific action set!
         long_description=False,
         individual_examples=True,
     ),

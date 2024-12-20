@@ -51,12 +51,46 @@ FLAGS_CUSTOM = GenericPromptFlags(
     extra_instructions=None,
 )
 
-
-AGENT_CUSTOM = GenericAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openrouter/meta-llama/llama-3.1-8b-instruct"],
-    flags=FLAGS_CUSTOM,
+# GPT-4o default config
+FLAGS_GPT_4o = GenericPromptFlags(
+    obs=dp.ObsFlags(
+        use_html=False,
+        use_ax_tree=True,
+        use_focused_element=True,
+        use_error_logs=True,
+        use_history=True,
+        use_past_error_logs=False,
+        use_action_history=True,
+        use_think_history=False,
+        use_diff=False,
+        html_type="pruned_html",
+        use_screenshot=False,
+        use_som=False,
+        extract_visible_tag=True,
+        extract_clickable_tag=True,
+        extract_coords="False",
+        filter_visible_elements_only=False,
+    ),
+    action=dp.ActionFlags(
+        action_set=bgym.HighLevelActionSetArgs(
+            subsets=["bid"],
+            multiaction=False,
+        ),
+        long_description=False,
+        individual_examples=False,
+    ),
+    use_plan=False,
+    use_criticise=False,
+    use_thinking=True,
+    use_memory=False,
+    use_concrete_example=True,
+    use_abstract_example=True,
+    use_hints=True,
+    enable_chat=False,
+    max_prompt_tokens=40_000,
+    be_cautious=True,
+    extra_instructions=None,
 )
-
 
 # GPT-3.5 default config
 FLAGS_GPT_3_5 = GenericPromptFlags(
@@ -97,12 +131,6 @@ FLAGS_GPT_3_5 = GenericPromptFlags(
     max_prompt_tokens=40_000,
     be_cautious=True,
     extra_instructions=None,
-)
-
-
-AGENT_3_5 = GenericAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-3.5-turbo-1106"],
-    flags=FLAGS_GPT_3_5,
 )
 
 # llama3-70b default config
@@ -147,71 +175,7 @@ FLAGS_LLAMA3_70B = GenericPromptFlags(
     add_missparsed_messages=True,
 )
 
-AGENT_LLAMA3_70B = GenericAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openrouter/meta-llama/llama-3-70b-instruct"],
-    flags=FLAGS_LLAMA3_70B,
-)
-AGENT_LLAMA31_70B = GenericAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openrouter/meta-llama/llama-3.1-70b-instruct"],
-    flags=FLAGS_LLAMA3_70B,
-)
-
 FLAGS_8B = GenericPromptFlags(
-    obs=dp.ObsFlags(
-        use_html=False,
-        use_ax_tree=True,
-        use_focused_element=True,
-        use_error_logs=False,
-        use_history=True,
-        use_past_error_logs=False,
-        use_action_history=True,
-        use_think_history=False,
-        use_diff=False,
-        html_type="pruned_html",
-        use_screenshot=False,
-        use_som=False,
-        extract_visible_tag=False,
-        extract_clickable_tag=False,
-        extract_coords="False",
-        filter_visible_elements_only=False,
-    ),
-    action=dp.ActionFlags(
-        action_set=bgym.HighLevelActionSetArgs(
-            subsets=["bid"],
-            multiaction=True,
-        ),
-        long_description=False,
-        individual_examples=True,
-    ),
-    use_plan=False,
-    use_criticise=False,
-    use_thinking=True,
-    use_memory=False,
-    use_concrete_example=True,
-    use_abstract_example=True,
-    use_hints=True,
-    enable_chat=False,
-    max_prompt_tokens=40_000,
-    be_cautious=True,
-    extra_instructions=None,
-    add_missparsed_messages=True,
-)
-
-
-AGENT_8B = GenericAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["meta-llama/Meta-Llama-3-8B-Instruct"],
-    flags=FLAGS_8B,
-)
-
-
-AGENT_LLAMA31_8B = GenericAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openrouter/meta-llama/llama-3.1-8b-instruct"],
-    flags=FLAGS_8B,
-)
-
-
-# GPT-4o default config
-FLAGS_GPT_4o = GenericPromptFlags(
     obs=dp.ObsFlags(
         use_html=False,
         use_ax_tree=True,
@@ -243,34 +207,14 @@ FLAGS_GPT_4o = GenericPromptFlags(
     use_thinking=True,
     use_memory=False,
     use_concrete_example=True,
-    use_abstract_example=True,
-    use_hints=True,
+    use_abstract_example=False,
+    use_hints=False,
     enable_chat=False,
-    max_prompt_tokens=40_000,
+    max_prompt_tokens=8192,  # max tokens for llama3-8b
     be_cautious=True,
     extra_instructions=None,
+    add_missparsed_messages=True,
 )
-
-AGENT_4o = GenericAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-2024-05-13"],
-    flags=FLAGS_GPT_4o,
-)
-
-AGENT_4o_MINI = GenericAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini-2024-07-18"],
-    flags=FLAGS_GPT_4o,
-)
-
-# GPT-4o vision default config
-FLAGS_GPT_4o_VISION = FLAGS_GPT_4o.copy()
-FLAGS_GPT_4o_VISION.obs.use_screenshot = True
-FLAGS_GPT_4o_VISION.obs.use_som = True
-
-AGENT_4o_VISION = GenericAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-2024-05-13"],
-    flags=FLAGS_GPT_4o_VISION,
-)
-
 
 DEFAULT_RS_FLAGS = GenericPromptFlags(
     flag_group="default_rs",
@@ -314,13 +258,6 @@ DEFAULT_RS_FLAGS = GenericPromptFlags(
     extra_instructions=None,
 )
 
-
-RANDOM_SEARCH_AGENT = GenericAgentArgs(
-    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-2024-05-13"],
-    flags=DEFAULT_RS_FLAGS,
-)
-
-
 FLAGS_TEST = GenericPromptFlags(
     obs=dp.ObsFlags(
         use_html=False,
@@ -357,6 +294,63 @@ FLAGS_TEST = GenericPromptFlags(
     max_prompt_tokens=None,
     be_cautious=True,
     extra_instructions=None,
+)
+
+AGENT_CUSTOM = GenericAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openrouter/meta-llama/llama-3.1-8b-instruct"],
+    flags=FLAGS_CUSTOM,
+)
+
+
+AGENT_3_5 = GenericAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-3.5-turbo-1106"],
+    flags=FLAGS_GPT_3_5,
+)
+
+AGENT_LLAMA3_70B = GenericAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openrouter/meta-llama/llama-3-70b-instruct"],
+    flags=FLAGS_LLAMA3_70B,
+)
+AGENT_LLAMA31_70B = GenericAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openrouter/meta-llama/llama-3.1-70b-instruct"],
+    flags=FLAGS_LLAMA3_70B,
+)
+
+AGENT_8B = GenericAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["local/Meta-Llama-3-8B-Instruct"],
+    flags=FLAGS_8B,
+)
+
+
+AGENT_LLAMA31_8B = GenericAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openrouter/meta-llama/llama-3.1-8b-instruct"],
+    flags=FLAGS_8B,
+)
+
+
+AGENT_4o = GenericAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-2024-05-13"],
+    flags=FLAGS_GPT_4o,
+)
+
+AGENT_4o_MINI = GenericAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-mini-2024-07-18"],
+    flags=FLAGS_GPT_4o,
+)
+
+# GPT-4o vision default config
+FLAGS_GPT_4o_VISION = FLAGS_GPT_4o.copy()
+FLAGS_GPT_4o_VISION.obs.use_screenshot = True
+FLAGS_GPT_4o_VISION.obs.use_som = True
+
+AGENT_4o_VISION = GenericAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-2024-05-13"],
+    flags=FLAGS_GPT_4o_VISION,
+)
+
+RANDOM_SEARCH_AGENT = GenericAgentArgs(
+    chat_model_args=CHAT_MODEL_ARGS_DICT["openai/gpt-4o-2024-05-13"],
+    flags=DEFAULT_RS_FLAGS,
 )
 
 
